@@ -5,7 +5,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "AuroraLumina\\": "src/"
+            "AuroraLumina\\": "src/Aurora"
         }
     },
     "authors": [
@@ -16,6 +16,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": "^8.3"
+        "php": "^8.3",
+        "psr/container": "^2.0"
     }
 }
