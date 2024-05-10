@@ -46,10 +46,39 @@ class Application
      */
     protected function buildCallback(string $handler): callable
     {
-        return function (Request $request, RequestHandlerInterface $requestHandler) use ($handler) {
+        return function (Request $request) use ($handler)
+        {
             [$class, $method] = explode('::', $handler);
-            return $this->instantiateController($class)->$method($request);
+
+            $controller = $this->instantiateController($class);
+            $this->validateMethod($controller, $method, $class);
+
+            return $this->callControllerMethod($controller, $method, $request);
         };
+    }
+
+    private function validateMethod($controller, string $method, string $class): void
+    {
+        if (!method_exists($controller, $method)) {
+            throw new \RuntimeException("Method '{$method}' not found in class '{$class}'");
+        }
+
+        $reflectionMethod = new \ReflectionMethod($controller, $method);
+        if (!$reflectionMethod->isPublic()) {
+            throw new \RuntimeException("Method '{$method}' in class '{$class}' is not public");
+        }
+    }
+
+    private function callControllerMethod($controller, string $method, Request $request): Response
+    {
+        return $controller->{$method}($request);
+    }
+
+    private function validateResponse($response): void
+    {
+        if (!($response instanceof Response)) {
+            throw new \RuntimeException("Controller method must return a Response object");
+        }
     }
 
     /**
@@ -68,7 +97,7 @@ class Application
             );
         }
 
-        return new $class();
+        return $constructor;
     }
 
     /**
@@ -85,7 +114,7 @@ class Application
     /**
      * Resolve a single constructor parameter dependency.
      *
-     * @param ReflectionParameter $param The parameter to resolve
+     * @param \ReflectionParameter $param The parameter to resolve
      * @return mixed The resolved dependency
      */
     protected function resolveDependency(\ReflectionParameter $param)
@@ -114,7 +143,9 @@ class Application
      */
     protected function buildRequestHandler(): RequestHandlerInterface
     {
-        return new class($this->middlewares) implements RequestHandlerInterface {
+        $middlewares = $this->middlewares;
+
+        return new class($middlewares) implements RequestHandlerInterface {
             private array $middlewares;
 
             public function __construct(array $middlewares)
@@ -127,8 +158,12 @@ class Application
                 $response = new \Laminas\Diactoros\Response();
                 foreach ($this->middlewares as $middleware) {
                     $response = $middleware->process($request, $this);
+                    if ($response instanceof Response) {
+                        return $response;
+                    }
                 }
-                return $response;
+                
+                return new \Laminas\Diactoros\Response\EmptyResponse(404);
             }
         };
     }
