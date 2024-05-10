@@ -2,7 +2,7 @@
 
 namespace AuroraLumina\Interface;
 
-interface Service
+interface ServiceInterface
 {
     
 }

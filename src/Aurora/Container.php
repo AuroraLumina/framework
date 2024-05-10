@@ -3,7 +3,7 @@
 namespace AuroraLumina;
 
 use Closure;
-use AuroraLumina\Interface\Service;
+use AuroraLumina\Interface\ServiceInterface;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -23,7 +23,7 @@ class Container implements ContainerInterface
      *
      * @throws \Exception
      */
-    public function get(string $id): Service | Closure
+    public function get(string $id): ServiceInterface | Closure
     {
         if (!$this->has($id))
         {
@@ -53,13 +53,15 @@ class Container implements ContainerInterface
      *
      * @throws \Exception
      */
-    public function bind(string $id, Service | Closure $concrete): void
+    public function bind(string $name, $concrete): void
     {
-        if ($this->has($id))
+        $class = get_class($concrete);
+
+        if ($this->has($name))
         {
-            throw new \Exception("Container has not found: $id");
+            throw new \Exception("Instance has not found: $class");
         }
 
-        $this->instances[$id] = $concrete;
+        $this->instances[$name] = $concrete;
     }
 }
