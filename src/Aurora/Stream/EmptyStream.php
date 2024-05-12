@@ -4,6 +4,9 @@ namespace AuroraLumina\Stream;
 
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * Implementation of PSR HTTP streams
+ */
 class EmptyStream implements StreamInterface
 {
     /**

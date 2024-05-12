@@ -2,21 +2,19 @@
 
 namespace AuroraLumina;
 
-use ReflectionClass;
 use AuroraLumina\Http\Emitter;
-use AuroraLumina\Http\MiddlewareDispatcher;
+use AuroraLumina\Routing\Router;
 use Laminas\Diactoros\ServerRequestFactory;
 
-// Use para Response e ServerRequest
-use Psr\Http\Server\RequestHandlerInterface;
-use Laminas\Diactoros\Response\EmptyResponse;
-use Laminas\Diactoros\Response as LaminasResponse;
+use AuroraLumina\Middleware\MiddlewareDispatcher;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class Application
 {
-    protected ?Container $container;
+    protected Container $container;
+
+    protected Router $router;
     
     protected MiddlewareDispatcher $middlewareDispatcher;
 
@@ -25,9 +23,10 @@ class Application
      *
      * @param Container|null $container The application container
      */
-    public function __construct(?Container $container = null)
+    public function __construct(Container $container)
     {
         $this->container = $container;
+        $this->router = new Router($container);
         $this->middlewareDispatcher = new MiddlewareDispatcher();
     }
 
@@ -40,108 +39,7 @@ class Application
      */
     public function get(string $path, string $handler): void
     {
-        $this->middlewareDispatcher->add(new RouteMiddleware(
-            'GET',
-            $path,
-            $this->buildCallback($handler)
-        ));
-    }
-
-    /**
-     * Build a middleware callback for the given handler.
-     *
-     * @param string $handler The handler string in format "Class::method"
-     * @return callable The middleware callback
-     */
-    protected function buildCallback(string $handler): callable
-    {
-        return function (Request $request) use ($handler)
-        {
-            [$class, $method] = explode('::', $handler);
-
-            $controller = $this->instantiateController($class);
-            $this->validateMethod($controller, $method, $class);
-
-            return $this->callControllerMethod($controller, $method, $request);
-        };
-    }
-
-    /**
-     * Instantiate a controller class with its dependencies injected.
-     *
-     * @param string $class The controller class name
-     * @return object The instantiated controller
-     */
-    protected function instantiateController(string $class)
-    {
-        $reflectionClass = new ReflectionClass($class);
-
-        if ($constructor = $reflectionClass->getConstructor()) {
-            return $reflectionClass->newInstanceArgs(
-                $this->resolveConstructorDependencies($constructor->getParameters())
-            );
-        }
-
-        return $constructor;
-    }
-
-    /**
-     * Resolve constructor dependencies for a given set of parameters.
-     *
-     * @param array $params The constructor parameters
-     * @return array The resolved dependencies
-     */
-    protected function resolveConstructorDependencies(array $params): array
-    {
-        return array_map([$this, 'resolveDependency'], $params);
-    }
-
-    /**
-     * Resolve a single constructor parameter dependency.
-     *
-     * @param \ReflectionParameter $param The parameter to resolve
-     * @return mixed The resolved dependency
-     */
-    protected function resolveDependency(\ReflectionParameter $param)
-    {
-        $name = $param->getType()->getName();
-        return $this->container->get($name);
-    }
-
-    /**
-     * Validate if the method exists and is public in the given controller class.
-     *
-     * @param object $controller The controller object
-     * @param string $method The method name
-     * @param string $class The class name
-     * @return void
-     * @throws \RuntimeException If method doesn't exist or is not public
-     */
-    private function validateMethod($controller, string $method, string $class): void
-    {
-        // Method existence check
-        if (!method_exists($controller, $method)) {
-            throw new \RuntimeException("Method '{$method}' not found in class '{$class}'");
-        }
-
-        // Method visibility check
-        $reflectionMethod = new \ReflectionMethod($controller, $method);
-        if (!$reflectionMethod->isPublic()) {
-            throw new \RuntimeException("Method '{$method}' in class '{$class}' is not public");
-        }
-    }
-
-    /**
-     * Call the specified method on the controller object.
-     *
-     * @param object $controller The controller object
-     * @param string $method The method name
-     * @param Request $request The request object
-     * @return Response The response object
-     */
-    private function callControllerMethod($controller, string $method, Request $request): Response
-    {
-        return $controller->{$method}($request);
+        $this->router->addRoute('GET', $path, $handler);
     }
 
     /**
@@ -152,7 +50,7 @@ class Application
      */
     public function handle(Request $request): Response
     {
-        return $this->middlewareDispatcher->handle($request);
+        return $this->router->handle($request);
     }
 
     /**

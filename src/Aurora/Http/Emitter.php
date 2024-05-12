@@ -15,12 +15,10 @@ class Emitter
     public function emit(ResponseInterface $response): void
     {
         $this->cleanOutputBuffer();
-        
-        $this->sendStatusLine($response);
-        
+
         $this->sendHeaders($response);
-        
-        echo $response->getBody();
+
+        $this->sendBody($response);
     }
 
     /**
@@ -30,23 +28,9 @@ class Emitter
      */
     private function cleanOutputBuffer(): void
     {
-        if (ob_get_level() > 0) {
+        while (ob_get_level() > 0) {
             ob_end_clean();
         }
-    }
-
-    /**
-     * Send the status line of the HTTP response.
-     *
-     * @param ResponseInterface $response The HTTP response.
-     * @return void
-     */
-    private function sendStatusLine(ResponseInterface $response): void
-    {
-        $protocol = $response->getProtocolVersion();
-        $statusCode = $response->getStatusCode();
-        $reasonPhrase = $response->getReasonPhrase();
-        header("HTTP/{$protocol} {$statusCode} {$reasonPhrase}", true, $statusCode);
     }
 
     /**
@@ -57,14 +41,39 @@ class Emitter
      */
     private function sendHeaders(ResponseInterface $response): void
     {
+        $statusCode = $response->getStatusCode();
+        $reasonPhrase = $response->getReasonPhrase();
+        $protocol = $response->getProtocolVersion();
+
+        header("HTTP/{$protocol} {$statusCode} {$reasonPhrase}", true, $statusCode);
+
         foreach ($response->getHeaders() as $name => $values) {
             foreach ($values as $value) {
                 header("{$name}: {$value}", false);
             }
         }
-        
+
         foreach ($response->getHeader('Set-Cookie') as $value) {
             header("Set-Cookie: {$value}", false);
+        }
+    }
+
+    /**
+     * Send the body of the HTTP response.
+     *
+     * @param ResponseInterface $response The HTTP response.
+     * @return void
+     */
+    private function sendBody(ResponseInterface $response): void
+    {
+        $body = $response->getBody();
+
+        if ($body->isSeekable()) {
+            $body->rewind();
+        }
+
+        if ($body->isReadable()) {
+            fpassthru($body->detach());
         }
     }
 }

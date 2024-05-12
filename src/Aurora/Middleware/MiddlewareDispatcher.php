@@ -1,6 +1,6 @@
 <?php
 
-namespace AuroraLumina\Http;
+namespace AuroraLumina\Middleware;
 
 use AuroraLumina\Http\Response\EmptyResponse;
 use Psr\Http\Message\ResponseInterface as Response;
