@@ -2,8 +2,8 @@
 
 namespace AuroraLumina\Factory;
 
-use AuroraLumina\Application;
 use AuroraLumina\Container;
+use AuroraLumina\Application;
 
 class ApplicationFactory
 {
