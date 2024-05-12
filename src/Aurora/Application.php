@@ -4,6 +4,7 @@ namespace AuroraLumina;
 
 use ReflectionClass;
 use AuroraLumina\Http\Emitter;
+use AuroraLumina\Http\MiddlewareDispatcher;
 use Laminas\Diactoros\ServerRequestFactory;
 
 // Use para Response e ServerRequest
@@ -16,7 +17,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class Application
 {
     protected ?Container $container;
-    protected array $middlewares = [];
+    
+    protected MiddlewareDispatcher $middlewareDispatcher;
 
     /**
      * Application constructor.
@@ -26,6 +28,7 @@ class Application
     public function __construct(?Container $container = null)
     {
         $this->container = $container;
+        $this->middlewareDispatcher = new MiddlewareDispatcher();
     }
 
     /**
@@ -37,11 +40,11 @@ class Application
      */
     public function get(string $path, string $handler): void
     {
-        $this->middlewares[] = new RouteMiddleware(
+        $this->middlewareDispatcher->add(new RouteMiddleware(
             'GET',
             $path,
             $this->buildCallback($handler)
-        );
+        ));
     }
 
     /**
@@ -149,41 +152,7 @@ class Application
      */
     public function handle(Request $request): Response
     {
-        $requestHandler = $this->buildRequestHandler();
-        
-        return $requestHandler->handle($request);
-    }
-
-    /**
-     * Build the request handler to process middlewares.
-     *
-     * @return RequestHandlerInterface The request handler
-     */
-    protected function buildRequestHandler(): RequestHandlerInterface
-    {
-        $middlewares = $this->middlewares;
-
-        return new class($middlewares) implements RequestHandlerInterface {
-            private array $middlewares;
-
-            public function __construct(array $middlewares)
-            {
-                $this->middlewares = $middlewares;
-            }
-
-            public function handle(Request $request): Response
-            {
-                $response = new LaminasResponse();
-                foreach ($this->middlewares as $middleware) {
-                    $response = $middleware->process($request, $this);
-                    if ($response instanceof Response) {
-                        return $response;
-                    }
-                }
-                
-                return new EmptyResponse(404); 
-            }
-        };
+        return $this->middlewareDispatcher->handle($request);
     }
 
     /**
