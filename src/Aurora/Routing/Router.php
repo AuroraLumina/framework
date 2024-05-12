@@ -7,8 +7,9 @@ use AuroraLumina\Container;
 use AuroraLumina\Http\Response\EmptyResponse;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface;
 
-class Router
+class Router implements RequestHandlerInterface
 {
     /**
      * @var Container The dependency injection container.
@@ -76,7 +77,8 @@ class Router
     {
         $reflectionClass = new ReflectionClass($class);
 
-        if ($constructor = $reflectionClass->getConstructor()) {
+        if ($constructor = $reflectionClass->getConstructor())
+        {
             return $reflectionClass->newInstanceArgs(
                 $this->resolveConstructorDependencies($constructor->getParameters())
             );
@@ -97,13 +99,15 @@ class Router
     private function validateMethod($controller, string $method, string $class): void
     {
         // Method existence check
-        if (!method_exists($controller, $method)) {
+        if (!method_exists($controller, $method))
+        {
             throw new \RuntimeException("Method '{$method}' not found in class '{$class}'");
         }
 
         // Method visibility check
         $reflectionMethod = new \ReflectionMethod($controller, $method);
-        if (!$reflectionMethod->isPublic()) {
+        if (!$reflectionMethod->isPublic())
+        {
             throw new \RuntimeException("Method '{$method}' in class '{$class}' is not public");
         }
     }
@@ -161,7 +165,7 @@ class Router
     }
 
     /**
-     * Handle a request.
+     * Processes a request.
      *
      * @param Request $request The request object.
      * @return Response The response object.

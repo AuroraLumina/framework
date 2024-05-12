@@ -4,10 +4,12 @@ namespace AuroraLumina;
 
 use AuroraLumina\Http\Emitter;
 use AuroraLumina\Routing\Router;
+use Psr\Http\Server\MiddlewareInterface;
 use Laminas\Diactoros\ServerRequestFactory;
 
 use AuroraLumina\Middleware\MiddlewareDispatcher;
 use Psr\Http\Message\ResponseInterface as Response;
+use AuroraLumina\Middleware\AuthenticationMiddleware;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class Application
@@ -27,7 +29,9 @@ class Application
     {
         $this->container = $container;
         $this->router = new Router($container);
-        $this->middlewareDispatcher = new MiddlewareDispatcher();
+        $this->middlewareDispatcher = new MiddlewareDispatcher($this->router);
+        $this->middlewareDispatcher->add(new AuthenticationMiddleware());
+        
     }
 
     /**
@@ -43,6 +47,19 @@ class Application
     }
 
     /**
+     * Adds a middleware to the middleware chain.
+     *
+     * @param MiddlewareInterface $middleware The middleware to be added.
+     * @return void
+     */
+    public function add(MiddlewareInterface $middleware)
+    {
+        // Adds the middleware to the middleware chain in the dispatcher
+        $this->middlewareDispatcher->add($middleware);
+    }
+
+
+    /**
      * Handle the incoming request and return a response.
      *
      * @param  Request  $request The incoming HTTP request
@@ -50,7 +67,7 @@ class Application
      */
     public function handle(Request $request): Response
     {
-        return $this->router->handle($request);
+        return $this->middlewareDispatcher->handle($request);
     }
 
     /**
