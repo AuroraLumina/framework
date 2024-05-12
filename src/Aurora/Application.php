@@ -2,10 +2,16 @@
 
 namespace AuroraLumina;
 
+use ReflectionClass;
+use AuroraLumina\Http\Emitter;
+use Laminas\Diactoros\ServerRequestFactory;
+
+// Use para Response e ServerRequest
+use Psr\Http\Server\RequestHandlerInterface;
+use Laminas\Diactoros\Response\EmptyResponse;
+use Laminas\Diactoros\Response as LaminasResponse;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionClass;
 
 class Application
 {
@@ -25,7 +31,7 @@ class Application
     /**
      * Add a GET route to the application.
      *
-     * @param string $path The route path
+     * @param string $path    The route path
      * @param string $handler The route handler
      * @return void
      */
@@ -55,30 +61,6 @@ class Application
 
             return $this->callControllerMethod($controller, $method, $request);
         };
-    }
-
-    private function validateMethod($controller, string $method, string $class): void
-    {
-        if (!method_exists($controller, $method)) {
-            throw new \RuntimeException("Method '{$method}' not found in class '{$class}'");
-        }
-
-        $reflectionMethod = new \ReflectionMethod($controller, $method);
-        if (!$reflectionMethod->isPublic()) {
-            throw new \RuntimeException("Method '{$method}' in class '{$class}' is not public");
-        }
-    }
-
-    private function callControllerMethod($controller, string $method, Request $request): Response
-    {
-        return $controller->{$method}($request);
-    }
-
-    private function validateResponse($response): void
-    {
-        if (!($response instanceof Response)) {
-            throw new \RuntimeException("Controller method must return a Response object");
-        }
     }
 
     /**
@@ -124,6 +106,42 @@ class Application
     }
 
     /**
+     * Validate if the method exists and is public in the given controller class.
+     *
+     * @param object $controller The controller object
+     * @param string $method The method name
+     * @param string $class The class name
+     * @return void
+     * @throws \RuntimeException If method doesn't exist or is not public
+     */
+    private function validateMethod($controller, string $method, string $class): void
+    {
+        // Method existence check
+        if (!method_exists($controller, $method)) {
+            throw new \RuntimeException("Method '{$method}' not found in class '{$class}'");
+        }
+
+        // Method visibility check
+        $reflectionMethod = new \ReflectionMethod($controller, $method);
+        if (!$reflectionMethod->isPublic()) {
+            throw new \RuntimeException("Method '{$method}' in class '{$class}' is not public");
+        }
+    }
+
+    /**
+     * Call the specified method on the controller object.
+     *
+     * @param object $controller The controller object
+     * @param string $method The method name
+     * @param Request $request The request object
+     * @return Response The response object
+     */
+    private function callControllerMethod($controller, string $method, Request $request): Response
+    {
+        return $controller->{$method}($request);
+    }
+
+    /**
      * Handle the incoming request and return a response.
      *
      * @param  Request  $request The incoming HTTP request
@@ -155,7 +173,7 @@ class Application
 
             public function handle(Request $request): Response
             {
-                $response = new \Laminas\Diactoros\Response();
+                $response = new LaminasResponse();
                 foreach ($this->middlewares as $middleware) {
                     $response = $middleware->process($request, $this);
                     if ($response instanceof Response) {
@@ -163,7 +181,7 @@ class Application
                     }
                 }
                 
-                return new \Laminas\Diactoros\Response\EmptyResponse(404);
+                return new EmptyResponse(404); 
             }
         };
     }
@@ -175,10 +193,21 @@ class Application
      */
     public function run(): void
     {
-        $request = \Laminas\Diactoros\ServerRequestFactory::fromGlobals();
+        $request = ServerRequestFactory::fromGlobals();
         
         $response = $this->handle($request);
         
-        (new \Laminas\HttpHandlerRunner\Emitter\SapiEmitter())->emit($response);
+        $this->emitResponse($response);
+    }
+
+    /**
+     * Emit the HTTP response.
+     *
+     * @param Response $response The HTTP response to emit
+     * @return void
+     */
+    protected function emitResponse(Response $response): void
+    {
+        (new Emitter())->emit($response);
     }
 }
