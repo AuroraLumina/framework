@@ -11,7 +11,6 @@ class AuthenticationMiddleware implements MiddlewareInterface
 {
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        var_dump('test');
         return $handler->handle($request);
     }
 }
