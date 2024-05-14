@@ -14,7 +14,7 @@ class Emitter
      */
     public function emit(ResponseInterface $response): void
     {
-        $this->cleanOutputBuffer();
+        //$this->cleanOutputBuffer();
 
         $this->sendHeaders($response);
 

@@ -31,7 +31,6 @@ class Application
         $this->router = new Router($container);
         $this->middlewareDispatcher = new MiddlewareDispatcher($this->router);
         $this->middlewareDispatcher->add(new AuthenticationMiddleware());
-        
     }
 
     /**
@@ -52,7 +51,7 @@ class Application
      * @param MiddlewareInterface $middleware The middleware to be added.
      * @return void
      */
-    public function add(MiddlewareInterface $middleware)
+    public function add(MiddlewareInterface $middleware): void
     {
         // Adds the middleware to the middleware chain in the dispatcher
         $this->middlewareDispatcher->add($middleware);
