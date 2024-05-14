@@ -78,12 +78,8 @@ class Route
      */
     public function match(string $method, string $path): bool
     {
-        if ($this->method === $method && $this->matchesPath($this->path, $path))
-        {
-            return true;
-        }
-
-        return false;
+        return $this->method === $method &&
+            $this->matchesPath($this->path, $path);
     }
 
     /**

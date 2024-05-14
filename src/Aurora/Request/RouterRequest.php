@@ -1,16 +1,20 @@
 <?php
 
-namespace AuroraLumina\Routing;
+namespace AuroraLumina\Request;
 
 use ReflectionClass;
 use AuroraLumina\Container;
+use AuroraLumina\Routing\Route;
+use Psr\Http\Message\ResponseInterface;
 use AuroraLumina\Interface\ServiceInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
+use AuroraLumina\Interface\RouterRequestInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class Router implements RequestHandlerInterface
+class RouterRequest implements RequestHandlerInterface, RouterRequestInterface
 {
     /**
      * The dependency injection container.
@@ -44,7 +48,7 @@ class Router implements RequestHandlerInterface
      * @param string $handler The handler string in format "Class::method".
      * @return void
      */
-    public function addRoute(string $method, string $path, string $handler): void
+    public function add(string $method, string $path, string $handler): void
     {
         $this->routes[] = new Route($method, $path, $handler);
     }
@@ -70,9 +74,12 @@ class Router implements RequestHandlerInterface
     protected function resolveDependency(\ReflectionParameter $param): ServiceInterface
     {
         $name = $param->getType()->getName();
-        if (!$this->container->has($name)) {
+        
+        if (!$this->container->has($name))
+        {
             throw new \RuntimeException("Dependency '$name' not found in the container");
         }
+
         return $this->container->get($name);
     }
 
@@ -88,10 +95,13 @@ class Router implements RequestHandlerInterface
         $reflectionClass = new ReflectionClass($class);
 
         $constructor = $reflectionClass->getConstructor();
-        if (!$constructor || count($constructor->getParameters()) === 0) {
+        if (!$constructor || count($constructor->getParameters()) === 0)
+        {
             // If the class has no constructor or no parameters, instantiate without arguments.
             return $reflectionClass->newInstance();
-        } else {
+        }
+        else
+        {
             // If the class has constructor parameters, resolve them.
             return $reflectionClass->newInstanceArgs(
                 $this->resolveConstructorDependencies($constructor->getParameters())
@@ -111,13 +121,15 @@ class Router implements RequestHandlerInterface
     private function validateMethod($controller, string $method, string $class): void
     {
         // Method existence check
-        if (!method_exists($controller, $method)) {
+        if (!method_exists($controller, $method))
+        {
             throw new \RuntimeException("Method '{$method}' not found in class '{$class}'");
         }
 
         // Method visibility check
         $reflectionMethod = new \ReflectionMethod($controller, $method);
-        if (!$reflectionMethod->isPublic()) {
+        if (!$reflectionMethod->isPublic())
+        {
             throw new \RuntimeException("Method '{$method}' in class '{$class}' is not public");
         }
     }
@@ -143,11 +155,13 @@ class Router implements RequestHandlerInterface
      */
     protected function buildCallback(string $handler): callable
     {
-        return function (Request $request) use ($handler) {
+        return function (Request $request) use ($handler)
+        {
             [$class, $method] = explode('::', $handler);
 
             $controller = $this->instantiateController($class);
-            if (!$controller) {
+            if (!$controller)
+            {
                 throw new \RuntimeException("Controller '{$class}' could not be instantiated");
             }
 
@@ -166,8 +180,10 @@ class Router implements RequestHandlerInterface
      */
     protected function findRoute(string $method, string $path): ?Route
     {
-        foreach ($this->routes as $route) {
-            if ($route->match($method, $path)) {
+        foreach ($this->routes as $route)
+        {
+            if ($route->match($method, $path))
+            {
                 return $route;
             }
         }
@@ -178,15 +194,16 @@ class Router implements RequestHandlerInterface
     /**
      * Processes a request.
      *
-     * @param Request $request The request object.
-     * @return Response The response object.
+     * @param ServerRequestInterface $request The request object.
+     * @return ResponseInterface The response object.
      */
-    public function handle(Request $request): Response
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $method = $request->getMethod();
         $path = $request->getUri()->getPath();
 
-        if ($route = $this->findRoute($method, $path)) {
+        if ($route = $this->findRoute($method, $path))
+        {
             $callback = $this->buildCallback($route->getHandler());
             return $callback($request);
         }

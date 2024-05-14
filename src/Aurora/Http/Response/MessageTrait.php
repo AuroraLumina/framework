@@ -287,7 +287,7 @@ trait MessageTrait
      */
     private function assertHeader(string $name): void
     {
-        self::assertValidName($name);
+        $this->assertValidName($name);
     }
 
     private static function assertValid(mixed $value): void
