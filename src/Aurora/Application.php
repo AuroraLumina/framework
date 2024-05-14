@@ -8,8 +8,12 @@ use AuroraLumina\Routing\Router;
 use Psr\Http\Server\MiddlewareInterface;
 use Laminas\Diactoros\ServerRequestFactory;
 
+use Psr\Http\Server\RequestHandlerInterface;
 use AuroraLumina\Middleware\MiddlewareDispatcher;
 use Psr\Http\Message\ResponseInterface as Response;
+use AuroraLumina\Middleware\AuthenticationMiddleware;
+use AuroraLumina\Routing\Route;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class Application
@@ -47,6 +51,7 @@ class Application
         $this->container = $container;
         $this->router = $router;
         $this->middlewareDispatcher = $middlewareDispatcher;
+        $this->middlewareDispatcher->add(new AuthenticationMiddleware());
     }
 
     /**

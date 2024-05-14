@@ -183,6 +183,7 @@ class Router implements RequestHandlerInterface
      */
     public function handle(Request $request): Response
     {
+        var_dump('bb');
         $method = $request->getMethod();
         $path = $request->getUri()->getPath();
 

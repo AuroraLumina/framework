@@ -2,10 +2,10 @@
 
 namespace AuroraLumina\Middleware;
 
-use AuroraLumina\Application;
-use InvalidArgumentException;
 use AuroraLumina\Routing\Router;
 use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use AuroraLumina\Http\Response\EmptyResponse;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
@@ -20,20 +20,13 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
     private array $middlewares = [];
 
     /**
-     * The Router instance.
-     *
-     * @var Router
-     */
-    private Router $router;
-
-    /**
      * Constructs a new MiddlewareDispatcher instance.
      *
      * @param Router $router The router instance.
      */
     public function __construct(Router $router)
     {
-        $this->router = $router;
+        $this->middlewares[] = $router;
     }
 
 
@@ -45,12 +38,21 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
      */
     public function add($middleware): MiddlewareDispatcher
     {
-        if (!$middleware instanceof MiddlewareInterface)
+        if ($middleware instanceof MiddlewareInterface)
         {
-            throw new InvalidArgumentException("{$middleware} is not an instance of MiddlewareInterface");
+            $this->middlewares[] = $middleware;
         }
-        $this->middlewares[] = $middleware;
         return $this;
+    }
+
+    private function finalRequest(Request $request): RequestHandlerInterface
+    {
+        return new class($request) implements RequestHandlerInterface {
+            public function handle(Request $request): Response
+            {
+                return new EmptyResponse(204);
+            }
+        };
     }
     
     /**
@@ -61,15 +63,18 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
      */
     public function handle(Request $request): Response
     {
-        $finalHandler = $this->router;
-        
+        $finalHandler = $this->finalRequest($request);
+
         $middlewares = array_reverse($this->middlewares);
-        
-        foreach ($middlewares as $middleware)
-        {
-            $finalHandler = $middleware->process($request, $finalHandler);
+
+        foreach ($middlewares as $middleware) {
+            if ($middleware instanceof RequestHandlerInterface) {
+                $finalHandler = $middleware->handle($request);
+            } else {
+                $finalHandler = $middleware->process($request, $finalHandler);
+            }
         }
-        
+
         return $finalHandler;
     }
 }
