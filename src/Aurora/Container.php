@@ -2,7 +2,6 @@
 
 namespace AuroraLumina;
 
-use Closure;
 use AuroraLumina\Interface\ServiceInterface;
 use Psr\Container\ContainerInterface;
 
@@ -11,7 +10,7 @@ class Container implements ContainerInterface
     /**
      * The container records.
      *
-     * @var array<Closure>
+     * @var array<ServiceInterface>
      */
     protected $instances = [];
 
@@ -19,11 +18,11 @@ class Container implements ContainerInterface
      * Get an instance from an id
      *
      * @param  string  $id
-     * @return Closure
+     * @return ServiceInterface
      *
      * @throws \Exception
      */
-    public function get(string $id): ServiceInterface | Closure
+    public function get(string $id): ServiceInterface
     {
         if (!$this->has($id))
         {
@@ -38,7 +37,6 @@ class Container implements ContainerInterface
      *
      * @param  string  $id
      * @return void
-     *
      */
     public function has(string $id): bool
     {
@@ -48,20 +46,20 @@ class Container implements ContainerInterface
     /**
      * Bind an instance from an id
      *
-     * @param  string  $id
-     * @return Closure
+     * @param  ServiceInterfaceservice$id
+     * @return void
      *
      * @throws \Exception
      */
-    public function bind(string $name, $concrete): void
+    public function bind(ServiceInterface $service): void
     {
-        $class = get_class($concrete);
+        $class = get_class($service);
 
-        if ($this->has($name))
+        if ($this->has($class))
         {
             throw new \Exception("Instance has not found: $class");
         }
 
-        $this->instances[$name] = $concrete;
+        $this->instances[$class] = $service;
     }
 }

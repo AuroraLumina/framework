@@ -2,20 +2,32 @@
 
 namespace AuroraLumina\Middleware;
 
+use AuroraLumina\Routing\Router;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
-use Laminas\Diactoros\Response as LaminasResponse;
 
 class MiddlewareDispatcher implements MiddlewareDispatcherInterface
 {
     /**
      * Array of middlewares.
      *
-     * @var array
+     * @var array<MiddlewareInterface>
      */
     private array $middlewares = [];
+
+    /**
+     * Constructs a new MiddlewareDispatcher instance.
+     *
+     * @param Router $router The router instance.
+     */
+    public function __construct(Router $router)
+    {
+        $this->middlewares[] = $router;
+    }
 
     /**
      * Adds a middleware to the dispatcher.
@@ -25,10 +37,36 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
      */
     public function add($middleware): MiddlewareDispatcher
     {
-        $this->middlewares[] = $middleware;
+        if ($middleware instanceof MiddlewareInterface)
+        {
+            $this->middlewares[] = $middleware;
+        }
         return $this;
     }
 
+    /**
+     * Creates a final request handler implementing the RequestHandlerInterface.
+     *
+     * @param Request $request The incoming HTTP request.
+     * @return RequestHandlerInterface The final request handler.
+     */
+    private function finalRequest(Request $request): RequestHandlerInterface
+    {
+        return new class($request) implements RequestHandlerInterface
+        {
+            /**
+             * Handles the request by returning a 204 No Content response.
+             *
+             * @param Request $request The incoming HTTP request.
+             * @return Response The HTTP response.
+             */
+            public function handle(Request $request): Response
+            {
+                return new EmptyResponse(204);
+            }
+        };
+    }
+    
     /**
      * Handles the request and returns a response.
      *
@@ -37,14 +75,22 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
      */
     public function handle(Request $request): Response
     {
-        $response = new LaminasResponse();
-        foreach ($this->middlewares as $middleware) {
-            $response = $middleware->process($request, $this);
-            if ($response instanceof Response) {
-                return $response;
+        $finalHandler = $this->finalRequest($request);
+
+        $middlewares = array_reverse($this->middlewares);
+
+        foreach ($middlewares as $middleware)
+        {
+            if ($middleware instanceof RequestHandlerInterface)
+            {
+                $finalHandler = $middleware->handle($request);
+            }
+            else
+            {
+                $finalHandler = $middleware->process($request, $finalHandler);
             }
         }
-        
-        return new EmptyResponse(404);
+
+        return $finalHandler;
     }
 }

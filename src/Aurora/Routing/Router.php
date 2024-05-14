@@ -4,24 +4,30 @@ namespace AuroraLumina\Routing;
 
 use ReflectionClass;
 use AuroraLumina\Container;
+use AuroraLumina\Interface\ServiceInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class Router
+class Router implements RequestHandlerInterface
 {
     /**
-     * @var Container The dependency injection container.
+     * The dependency injection container.
+     *
+     * @var Container|null
      */
-    protected Container $container;
-    
+    protected ?Container $container;
+
     /**
-     * @var array An array to store route objects.
+     * An array to store route objects.
+     *
+     * @var array
      */
     protected array $routes = [];
 
     /**
-     * Router constructor.
+     * Constructs a new Router instance.
      *
      * @param Container $container The dependency injection container.
      */
@@ -58,11 +64,15 @@ class Router
      * Resolve a single constructor parameter dependency.
      *
      * @param \ReflectionParameter $param The parameter to resolve.
-     * @return mixed The resolved dependency.
+     * @return ServiceInterface The resolved dependency.
+     * @throws \RuntimeException If the dependency cannot be resolved.
      */
-    protected function resolveDependency(\ReflectionParameter $param)
+    protected function resolveDependency(\ReflectionParameter $param): ServiceInterface
     {
         $name = $param->getType()->getName();
+        if (!$this->container->has($name)) {
+            throw new \RuntimeException("Dependency '$name' not found in the container");
+        }
         return $this->container->get($name);
     }
 
@@ -70,19 +80,23 @@ class Router
      * Instantiate a controller class with its dependencies injected.
      *
      * @param string $class The controller class name.
-     * @return object The instantiated controller.
+     * @return object|null The instantiated controller.
+     * @throws \RuntimeException If the controller cannot be instantiated.
      */
-    protected function instantiateController(string $class)
+    protected function instantiateController(string $class): ?object
     {
         $reflectionClass = new ReflectionClass($class);
 
-        if ($constructor = $reflectionClass->getConstructor()) {
+        $constructor = $reflectionClass->getConstructor();
+        if (!$constructor || count($constructor->getParameters()) === 0) {
+            // If the class has no constructor or no parameters, instantiate without arguments.
+            return $reflectionClass->newInstance();
+        } else {
+            // If the class has constructor parameters, resolve them.
             return $reflectionClass->newInstanceArgs(
                 $this->resolveConstructorDependencies($constructor->getParameters())
             );
         }
-
-        return $constructor;
     }
 
     /**
@@ -92,7 +106,7 @@ class Router
      * @param string $method The method name.
      * @param string $class The class name.
      * @return void
-     * @throws \RuntimeException If method doesn't exist or is not public.
+     * @throws \RuntimeException If the method doesn't exist or is not public.
      */
     private function validateMethod($controller, string $method, string $class): void
     {
@@ -129,11 +143,14 @@ class Router
      */
     protected function buildCallback(string $handler): callable
     {
-        return function (Request $request) use ($handler)
-        {
+        return function (Request $request) use ($handler) {
             [$class, $method] = explode('::', $handler);
 
             $controller = $this->instantiateController($class);
+            if (!$controller) {
+                throw new \RuntimeException("Controller '{$class}' could not be instantiated");
+            }
+
             $this->validateMethod($controller, $method, $class);
 
             return $this->callControllerMethod($controller, $method, $request);
@@ -149,10 +166,8 @@ class Router
      */
     protected function findRoute(string $method, string $path): ?Route
     {
-        foreach ($this->routes as $route)
-        {
-            if ($route->match($method, $path))
-            {
+        foreach ($this->routes as $route) {
+            if ($route->match($method, $path)) {
                 return $route;
             }
         }
@@ -161,7 +176,7 @@ class Router
     }
 
     /**
-     * Handle a request.
+     * Processes a request.
      *
      * @param Request $request The request object.
      * @return Response The response object.
@@ -171,8 +186,7 @@ class Router
         $method = $request->getMethod();
         $path = $request->getUri()->getPath();
 
-        if ($route = $this->findRoute($method, $path))
-        {
+        if ($route = $this->findRoute($method, $path)) {
             $callback = $this->buildCallback($route->getHandler());
             return $callback($request);
         }
