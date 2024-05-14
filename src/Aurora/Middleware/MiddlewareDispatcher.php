@@ -2,10 +2,10 @@
 
 namespace AuroraLumina\Middleware;
 
+use AuroraLumina\Application;
 use InvalidArgumentException;
 use AuroraLumina\Routing\Router;
 use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
@@ -15,16 +15,27 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
     /**
      * Array of middlewares.
      *
-     * @var array
+     * @var array<MiddlewareInterface>
      */
     private array $middlewares = [];
 
-    protected RequestHandlerInterface $router;
+    /**
+     * The Router instance.
+     *
+     * @var Router
+     */
+    private Router $router;
 
+    /**
+     * Constructs a new MiddlewareDispatcher instance.
+     *
+     * @param Router $router The router instance.
+     */
     public function __construct(Router $router)
     {
         $this->router = $router;
     }
+
 
     /**
      * Adds a middleware to the dispatcher.
@@ -52,7 +63,9 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
     {
         $finalHandler = $this->router;
         
-        foreach (array_reverse($this->middlewares) as $middleware)
+        $middlewares = array_reverse($this->middlewares);
+        
+        foreach ($middlewares as $middleware)
         {
             $finalHandler = $middleware->process($request, $finalHandler);
         }

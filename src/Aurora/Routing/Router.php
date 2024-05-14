@@ -13,17 +13,21 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class Router implements RequestHandlerInterface
 {
     /**
-     * @var Container The dependency injection container.
+     * The dependency injection container.
+     *
+     * @var Container|null
      */
-    protected Container $container;
-    
+    protected ?Container $container;
+
     /**
-     * @var array An array to store route objects.
+     * An array to store route objects.
+     *
+     * @var array
      */
     protected array $routes = [];
 
     /**
-     * Router constructor.
+     * Constructs a new Router instance.
      *
      * @param Container $container The dependency injection container.
      */
@@ -83,13 +87,16 @@ class Router implements RequestHandlerInterface
     {
         $reflectionClass = new ReflectionClass($class);
 
-        if ($constructor = $reflectionClass->getConstructor()) {
+        $constructor = $reflectionClass->getConstructor();
+        if (!$constructor || count($constructor->getParameters()) === 0) {
+            // If the class has no constructor or no parameters, instantiate without arguments.
+            return $reflectionClass->newInstance();
+        } else {
+            // If the class has constructor parameters, resolve them.
             return $reflectionClass->newInstanceArgs(
                 $this->resolveConstructorDependencies($constructor->getParameters())
             );
         }
-
-        return $constructor;
     }
 
     /**

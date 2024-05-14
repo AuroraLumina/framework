@@ -2,7 +2,6 @@
 
 namespace AuroraLumina;
 
-use Closure;
 use AuroraLumina\Interface\ServiceInterface;
 use Psr\Container\ContainerInterface;
 
@@ -38,7 +37,6 @@ class Container implements ContainerInterface
      *
      * @param  string  $id
      * @return void
-     *
      */
     public function has(string $id): bool
     {

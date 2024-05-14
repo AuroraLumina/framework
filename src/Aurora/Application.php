@@ -3,34 +3,50 @@
 namespace AuroraLumina;
 
 use AuroraLumina\Http\Emitter;
+use AuroraLumina\Interface\ServiceInterface;
 use AuroraLumina\Routing\Router;
 use Psr\Http\Server\MiddlewareInterface;
 use Laminas\Diactoros\ServerRequestFactory;
 
 use AuroraLumina\Middleware\MiddlewareDispatcher;
 use Psr\Http\Message\ResponseInterface as Response;
-use AuroraLumina\Middleware\AuthenticationMiddleware;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class Application
 {
+    /**
+     * Dependency injection container.
+     *
+     * @var Container
+     */
     protected Container $container;
 
+    /**
+     * Router instance.
+     *
+     * @var Router
+     */
     protected Router $router;
-    
+
+    /**
+     * Middleware dispatcher instance.
+     *
+     * @var MiddlewareDispatcher
+     */
     protected MiddlewareDispatcher $middlewareDispatcher;
 
     /**
      * Application constructor.
      *
-     * @param Container|null $container The application container
+     * @param Container $container The dependency injection container.
+     * @param Router $router The router instance.
+     * @param MiddlewareDispatcher $middlewareDispatcher The middleware dispatcher instance.
      */
-    public function __construct(Container $container)
+    public function __construct(Container $container, Router $router, MiddlewareDispatcher $middlewareDispatcher)
     {
         $this->container = $container;
-        $this->router = new Router($container);
-        $this->middlewareDispatcher = new MiddlewareDispatcher($this->router);
-        $this->middlewareDispatcher->add(new AuthenticationMiddleware());
+        $this->router = $router;
+        $this->middlewareDispatcher = $middlewareDispatcher;
     }
 
     /**
@@ -46,12 +62,23 @@ class Application
     }
 
     /**
+     * Binds a service to the container.
+     *
+     * @param ServiceInterface $service The service to be bound.
+     * @return void
+     */
+    public function bindContainer(ServiceInterface $service): void
+    {
+        $this->container->bind($service);
+    }
+
+    /**
      * Adds a middleware to the middleware chain.
      *
      * @param MiddlewareInterface $middleware The middleware to be added.
      * @return void
      */
-    public function add(MiddlewareInterface $middleware): void
+    public function addMiddleware(MiddlewareInterface $middleware): void
     {
         // Adds the middleware to the middleware chain in the dispatcher
         $this->middlewareDispatcher->add($middleware);
