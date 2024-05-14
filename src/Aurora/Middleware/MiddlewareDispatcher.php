@@ -29,7 +29,6 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
         $this->middlewares[] = $router;
     }
 
-
     /**
      * Adds a middleware to the dispatcher.
      *
@@ -45,9 +44,22 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
         return $this;
     }
 
+    /**
+     * Creates a final request handler implementing the RequestHandlerInterface.
+     *
+     * @param Request $request The incoming HTTP request.
+     * @return RequestHandlerInterface The final request handler.
+     */
     private function finalRequest(Request $request): RequestHandlerInterface
     {
-        return new class($request) implements RequestHandlerInterface {
+        return new class($request) implements RequestHandlerInterface
+        {
+            /**
+             * Handles the request by returning a 204 No Content response.
+             *
+             * @param Request $request The incoming HTTP request.
+             * @return Response The HTTP response.
+             */
             public function handle(Request $request): Response
             {
                 return new EmptyResponse(204);
@@ -67,10 +79,14 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
 
         $middlewares = array_reverse($this->middlewares);
 
-        foreach ($middlewares as $middleware) {
-            if ($middleware instanceof RequestHandlerInterface) {
+        foreach ($middlewares as $middleware)
+        {
+            if ($middleware instanceof RequestHandlerInterface)
+            {
                 $finalHandler = $middleware->handle($request);
-            } else {
+            }
+            else
+            {
                 $finalHandler = $middleware->process($request, $finalHandler);
             }
         }
