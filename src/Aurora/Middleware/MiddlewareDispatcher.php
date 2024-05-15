@@ -2,8 +2,9 @@
 
 namespace AuroraLumina\Middleware;
 
-use AuroraLumina\Routing\Router;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -20,27 +21,14 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
     private array $middlewares = [];
 
     /**
-     * Constructs a new MiddlewareDispatcher instance.
-     *
-     * @param Router $router The router instance.
-     */
-    public function __construct(Router $router)
-    {
-        $this->middlewares[] = $router;
-    }
-
-    /**
      * Adds a middleware to the dispatcher.
      *
      * @param mixed $middleware The middleware to add
-     * @return MiddlewareDispatcher This instance for method chaining
+     * @return MiddlewareDispatcherInterface This instance for method chaining
      */
-    public function add($middleware): MiddlewareDispatcher
+    public function add(MiddlewareInterface $middleware): MiddlewareDispatcherInterface
     {
-        if ($middleware instanceof MiddlewareInterface)
-        {
-            $this->middlewares[] = $middleware;
-        }
+        $this->middlewares[] = $middleware;
         return $this;
     }
 
@@ -50,7 +38,7 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
      * @param Request $request The incoming HTTP request.
      * @return RequestHandlerInterface The final request handler.
      */
-    private function finalRequest(Request $request): RequestHandlerInterface
+    private function finalRequest(ServerRequestInterface $request): RequestHandlerInterface
     {
         return new class($request) implements RequestHandlerInterface
         {
@@ -70,10 +58,10 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
     /**
      * Handles the request and returns a response.
      *
-     * @param Request $request The incoming HTTP request
-     * @return Response The HTTP response
+     * @param ServerRequestInterface $request The incoming HTTP request
+     * @return ResponseInterface The HTTP response
      */
-    public function handle(Request $request): Response
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $finalHandler = $this->finalRequest($request);
 
@@ -81,14 +69,7 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
 
         foreach ($middlewares as $middleware)
         {
-            if ($middleware instanceof RequestHandlerInterface)
-            {
-                $finalHandler = $middleware->handle($request);
-            }
-            else
-            {
-                $finalHandler = $middleware->process($request, $finalHandler);
-            }
+            $finalHandler = $middleware->process($request, $finalHandler);
         }
 
         return $finalHandler;

@@ -3,18 +3,15 @@
 namespace AuroraLumina;
 
 use AuroraLumina\Http\Emitter;
-use AuroraLumina\Interface\ServiceInterface;
-use AuroraLumina\Routing\Router;
 use Psr\Http\Server\MiddlewareInterface;
 use Laminas\Diactoros\ServerRequestFactory;
 
-use Psr\Http\Server\RequestHandlerInterface;
-use AuroraLumina\Middleware\MiddlewareDispatcher;
+use AuroraLumina\Interface\ServiceInterface;
+use AuroraLumina\Interface\RouterRequestInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use AuroraLumina\Middleware\AuthenticationMiddleware;
-use AuroraLumina\Routing\Route;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
 class Application
 {
@@ -26,30 +23,32 @@ class Application
     protected Container $container;
 
     /**
-     * Router instance.
+     * Router request instance.
      *
-     * @var Router
+     * @var RouterRequestInterface
      */
-    protected Router $router;
+    protected RouterRequestInterface $routerRequest;
 
     /**
      * Middleware dispatcher instance.
      *
-     * @var MiddlewareDispatcher
+     * @var MiddlewareDispatcherInterface
      */
-    protected MiddlewareDispatcher $middlewareDispatcher;
+    protected MiddlewareDispatcherInterface $middlewareDispatcher;
 
     /**
      * Application constructor.
      *
      * @param Container $container The dependency injection container.
-     * @param Router $router The router instance.
-     * @param MiddlewareDispatcher $middlewareDispatcher The middleware dispatcher instance.
+     * @param RouterRequestInterface $routerRequest The router request instance.
+     * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
-    public function __construct(Container $container, Router $router, MiddlewareDispatcher $middlewareDispatcher)
+    public function __construct(Container $container,
+        RouterRequestInterface $routerRequest,
+        MiddlewareDispatcherInterface $middlewareDispatcher)
     {
         $this->container = $container;
-        $this->router = $router;
+        $this->routerRequest = $routerRequest;
         $this->middlewareDispatcher = $middlewareDispatcher;
         $this->middlewareDispatcher->add(new AuthenticationMiddleware());
     }
@@ -63,7 +62,7 @@ class Application
      */
     public function get(string $path, string $handler): void
     {
-        $this->router->addRoute('GET', $path, $handler);
+        $this->routerRequest->add('GET', $path, $handler);
     }
 
     /**
@@ -98,31 +97,35 @@ class Application
      */
     public function handle(Request $request): Response
     {
-        return $this->middlewareDispatcher->handle($request);
+        $response = $this->middlewareDispatcher->handle($request);
+        $response = $this->routerRequest->handle($request);
+        return $response;
     }
 
     /**
      * Run the application.
      *
+     * @param bool $cleanDebuff Clear output
      * @return void
      */
-    public function run(): void
+    public function run(bool $cleanDebuff = true): void
     {
         $request = ServerRequestFactory::fromGlobals();
         
         $response = $this->handle($request);
         
-        $this->emitResponse($response);
+        $this->emitResponse($response, $cleanDebuff);
     }
 
     /**
      * Emit the HTTP response.
      *
      * @param Response $response The HTTP response to emit
+     * @param bool $cleanDebuff Clear output
      * @return void
      */
-    protected function emitResponse(Response $response): void
+    protected function emitResponse(Response $response, bool $cleanDebuff): void
     {
-        (new Emitter())->emit($response);
+        (new Emitter())->emit($response, $cleanDebuff);
     }
 }

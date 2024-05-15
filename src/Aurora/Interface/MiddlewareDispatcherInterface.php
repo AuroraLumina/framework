@@ -2,6 +2,7 @@
 
 namespace AuroraLumina\Interface;
 
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
@@ -19,5 +20,5 @@ interface MiddlewareDispatcherInterface extends RequestHandlerInterface
      * @param mixed $middleware The middleware to add.
      * @return MiddlewareDispatcherInterface This instance for method chaining.
      */
-    public function add($middleware): self;
+    public function add(MiddlewareInterface $middleware): self;
 }

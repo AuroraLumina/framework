@@ -10,11 +10,15 @@ class Emitter
      * Emit an HTTP response to the client.
      *
      * @param ResponseInterface $response The HTTP response to emit.
+     * @param bool $cleanDebuff Clear output
      * @return void
      */
-    public function emit(ResponseInterface $response): void
+    public function emit(ResponseInterface $response, bool $cleanDebuff = true): void
     {
-        //$this->cleanOutputBuffer();
+        if ($cleanDebuff)
+        {
+            $this->cleanOutputBuffer();
+        }
 
         $this->sendHeaders($response);
 

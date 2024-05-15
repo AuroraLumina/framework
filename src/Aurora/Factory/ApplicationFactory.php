@@ -4,8 +4,9 @@ namespace AuroraLumina\Factory;
 
 use AuroraLumina\Container;
 use AuroraLumina\Application;
-use AuroraLumina\Routing\Router;
+use AuroraLumina\Request\RouterRequest;
 use AuroraLumina\Middleware\MiddlewareDispatcher;
+use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
 class ApplicationFactory
 {
@@ -21,14 +22,14 @@ class ApplicationFactory
      *
      * @var Router|null
      */
-    protected static ?Router $router;
+    protected static ?RouterRequest $router;
 
     /**
      * The application MiddlewareDispatcher.
      *
-     * @var MiddlewareDispatcher|null
+     * @var MiddlewareDispatcherInterface|null
      */
-    protected static ?MiddlewareDispatcher $middlewareDispatcher;
+    protected static ?MiddlewareDispatcherInterface $middlewareDispatcher;
 
     /**
      * Create a new Application.
@@ -40,7 +41,7 @@ class ApplicationFactory
     public static function createApplication(?Container $container = null): Application
     {
         static::$container = $container ?? static::$container ?? new Container();
-        static::$router = new Router(static::$container);
+        static::$router = new RouterRequest(static::$container);
         static::$middlewareDispatcher = new MiddlewareDispatcher(static::$router);
         return new Application(
             static::$container,
