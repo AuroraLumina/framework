@@ -8,6 +8,11 @@
             "AuroraLumina\\": "src/Aurora"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Thalys Márcio",
