@@ -4,8 +4,9 @@ namespace AuroraLumina\Interface;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-interface RouterRequestInterface
+interface RouterRequestInterface extends RequestHandlerInterface
 {
     /**
      * Adds a middleware to the dispatcher.

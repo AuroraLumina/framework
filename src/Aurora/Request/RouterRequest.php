@@ -8,13 +8,12 @@ use AuroraLumina\Routing\Route;
 use Psr\Http\Message\ResponseInterface;
 use AuroraLumina\Interface\ServiceInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use AuroraLumina\Interface\RouterRequestInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class RouterRequest implements RequestHandlerInterface, RouterRequestInterface
+class RouterRequest implements RouterRequestInterface
 {
     /**
      * The dependency injection container.
@@ -31,6 +30,12 @@ class RouterRequest implements RequestHandlerInterface, RouterRequestInterface
     protected array $routes = [];
 
     /**
+     * 
+     * @var ResponseInterface
+     */
+    protected ResponseInterface $response;
+
+    /**
      * Constructs a new Router instance.
      *
      * @param Container $container The dependency injection container.
@@ -38,6 +43,7 @@ class RouterRequest implements RequestHandlerInterface, RouterRequestInterface
     public function __construct(Container $container)
     {
         $this->container = $container;
+        $this->response = new EmptyResponse();
     }
 
     /**

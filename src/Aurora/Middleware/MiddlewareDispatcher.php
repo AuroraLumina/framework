@@ -5,10 +5,8 @@ namespace AuroraLumina\Middleware;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use AuroraLumina\Interface\RouterRequestInterface;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
 class MiddlewareDispatcher implements MiddlewareDispatcherInterface
@@ -21,6 +19,30 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
     private array $middlewares = [];
 
     /**
+     * Array of closures
+     * 
+     * @var array<Closure>
+     */
+    private array $closures = [];
+
+    /**
+     * Router request instance.
+     *
+     * @var RouterRequestInterface
+     */
+    private RouterRequestInterface $routerRequest;
+
+    /**
+     * Application constructor.
+     *
+     * @param RouterRequestInterface $routerRequest The router request instance.
+     */
+    public function __construct(RouterRequestInterface $routerRequest)
+    {
+        $this->routerRequest = $routerRequest;
+    }
+
+    /**
      * Adds a middleware to the dispatcher.
      *
      * @param mixed $middleware The middleware to add
@@ -31,29 +53,6 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
         $this->middlewares[] = $middleware;
         return $this;
     }
-
-    /**
-     * Creates a final request handler implementing the RequestHandlerInterface.
-     *
-     * @param Request $request The incoming HTTP request.
-     * @return RequestHandlerInterface The final request handler.
-     */
-    private function finalRequest(ServerRequestInterface $request): RequestHandlerInterface
-    {
-        return new class($request) implements RequestHandlerInterface
-        {
-            /**
-             * Handles the request by returning a 204 No Content response.
-             *
-             * @param Request $request The incoming HTTP request.
-             * @return Response The HTTP response.
-             */
-            public function handle(Request $request): Response
-            {
-                return new EmptyResponse(204);
-            }
-        };
-    }
     
     /**
      * Handles the request and returns a response.
@@ -63,13 +62,26 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $finalHandler = $this->finalRequest($request);
+        // $finalHandler RequestHandlerInterface intercae
+        $finalHandler = $this->routerRequest;
+        
+        if (strtoupper($request->getMethod()) === 'HEAD')
+        {
+            return new EmptyResponse(204);
+        }
 
         $middlewares = array_reverse($this->middlewares);
+
+        $closures = array_reverse($this->closures);
 
         foreach ($middlewares as $middleware)
         {
             $finalHandler = $middleware->process($request, $finalHandler);
+        }
+
+        foreach ($closures as $closure)
+        {
+            $closure();
         }
 
         return $finalHandler;

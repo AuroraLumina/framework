@@ -2,6 +2,7 @@
     "name": "auroralumina/framework",
     "description": "Aurora Framework",
     "type": "library",
+    "keywords": ["aurora", "framework"],
     "license": "MIT",
     "autoload": {
         "psr-4": {
