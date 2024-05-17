@@ -14,7 +14,7 @@ use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
 class Application
 {
-    
+
     /**
      * Dependency injection container.
      *
@@ -43,9 +43,7 @@ class Application
      * @param RouterRequestInterface $routerRequest The router request instance.
      * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
-    public function __construct(Container $container,
-    RouterRequestInterface $routerRequest,
-    MiddlewareDispatcherInterface $middlewareDispatcher)
+    public function __construct(Container $container, RouterRequestInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
     {
         $this->container = $container;
         $this->routerRequest = $routerRequest;
@@ -106,9 +104,7 @@ class Application
     public function run(bool $cleanDebuff = true): void
     {
         $request = ServerRequestFactory::fromGlobals();
-        
         $response = $this->handle($request);
-        
         $this->emitResponse($response, $cleanDebuff);
     }
     
