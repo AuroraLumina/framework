@@ -6,12 +6,13 @@
     </testsuite>
   </testsuites>
 
+  <filter>
+    <whitelist>
+      <directory suffix=".php">./src</directory>
+    </whitelist>
+  </filter>
+
   <coverage>
-    <filter>
-      <whitelist>
-        <directory suffix=".php">./src</directory>
-      </whitelist>
-    </filter>
     <report>
       <clover outputFile="coverage.xml"/>
     </report>
