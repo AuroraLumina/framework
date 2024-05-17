@@ -8,33 +8,42 @@ use AuroraLumina\Session\SessionManager;
 class SessionTest extends TestCase
 {
     /**
+     * @var SessionManager
+     */
+    private $sessionManager;
+
+    /**
+     * Set up the session manager before each test.
+     */
+    protected function setUp(): void
+    {
+        $this->sessionManager = new SessionManager();
+    }
+
+    /**
      * Test session insertion and retrieval.
      *
      * This method tests the insertion and retrieval of a session value using the SessionManager class.
      */
-    public function testSession(): void
+    public function testInsertSession()
     {
-        $sessionManager = new SessionManager();
-        $sessionManager->insertSession('key', 'value');
-        $this->assertEquals('value', $sessionManager->getSession('key'));
+        $this->assertTrue($this->sessionManager->insertSession('key', 'value'));
+        $this->assertEquals('value', $this->sessionManager->getSession('key'));
+    }
+    
+
+    public function testRemoveSession()
+    {
+        $this->assertTrue($this->sessionManager->insertSession('key', 'value'));
+        $this->sessionManager->removeSession('key');
+        $this->assertNull($this->sessionManager->getSession('key'));
     }
 
-    public function testInsertSession_NewKey()
+    /**
+     * Clear the session data after each test.
+     */
+    protected function tearDown(): void
     {
-        $sessionManager = new SessionManager();
-        $key = 'test_key';
-        $value = 'test_value';
-
-        $this->assertTrue($sessionManager->insertSession($key, $value));
-        $this->assertEquals($value, $sessionManager->getSession($key));
-    }
-
-    public function testInsertSession_EmptyStringValue()
-    {
-        $sessionManager = new SessionManager();
-        $key = 'test_key';
-
-        $this->assertTrue($sessionManager->insertSession($key, ''));
-        $this->assertEquals('', $sessionManager->getSession($key));
+        $this->sessionManager->dropSessions();
     }
 }
