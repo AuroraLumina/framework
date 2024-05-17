@@ -82,7 +82,7 @@ class Container implements ContainerInterface
 
         if ($this->has($class))
         {
-            throw new \Exception("Instance has not found:" . htmlspecialchars($class));
+            throw new \Exception("Instance has not found:" . htmlspecialchars($class, ENT_QUOTES, 'UTF-8'));
         }
 
         $this->instances[$class] = $service;
