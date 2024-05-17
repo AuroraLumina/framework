@@ -51,7 +51,7 @@ class Container implements ContainerInterface
     {
         if (!$this->has($id))
         {
-            throw new \Exception("Container has not found: " . htmlspecialchars($id));
+            throw new \Exception("Container has not found: " . htmlspecialchars($id, ENT_QUOTES, 'UTF-8'));
         }
 
         return $this->instances[$id];
