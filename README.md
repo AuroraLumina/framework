@@ -7,5 +7,5 @@
 <a href="https://packagist.org/packages/auroralumina/framework"><img src="https://img.shields.io/packagist/dt/auroralumina/framework" alt="Total Downloads"></a>
 <a href="https://packagist.org/packages/auroralumina/framework"><img src="https://img.shields.io/packagist/v/auroralumina/framework" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/auroralumina/framework"><img src="https://img.shields.io/packagist/l/auroralumina/framework" alt="License"></a>
-[![codecov](https://codecov.io/gh/AuroraLumina/framework/graph/badge.svg?token=7J4M63C7G7)](https://codecov.io/gh/AuroraLumina/framework)
+<a href="https://codecov.io/gh/AuroraLumina/framework" ><img src="https://codecov.io/gh/AuroraLumina/framework/graph/badge.svg?token=7J4M63C7G7"/></a>
 </p>
