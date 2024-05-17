@@ -5,8 +5,8 @@ namespace AuroraLumina;
 use AuroraLumina\Http\Emitter;
 use Psr\Http\Server\MiddlewareInterface;
 
-use Laminas\Diactoros\ServerRequestFactory;
 use AuroraLumina\Interface\ServiceInterface;
+use AuroraLumina\Factory\ServerRequestFactory;
 use AuroraLumina\Interface\RouterRequestInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
