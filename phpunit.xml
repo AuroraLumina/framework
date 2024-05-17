@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php">
-  <testsuites>
-    <testsuite name="My Test Suite">
-      <directory>./tests</directory>
-    </testsuite>
-  </testsuites>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" "vendor/autoload.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.4/phpunit.xsd">
+    <php>
+        <ini name="memory_limit" value="-1"/>
+        <ini name="apc.enable_cli" value="1"/>
+    </php>
 
-  <coverage processUncoveredFiles="true">
-    <include>
-      <directory suffix=".php">./src</directory>
-    </include>
-  </coverage>
+    <testsuites>
+        <testsuite name="Tests">
+            <directory>./tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">src/</directory>
+        </include>
+    </source>
 </phpunit>
