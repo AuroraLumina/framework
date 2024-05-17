@@ -6,15 +6,9 @@
     </testsuite>
   </testsuites>
 
-  <filter>
-    <whitelist>
+  <coverage processUncoveredFiles="true">
+    <include>
       <directory suffix=".php">./src</directory>
-    </whitelist>
-  </filter>
-
-  <coverage>
-    <report>
-      <clover outputFile="coverage.xml"/>
-    </report>
+    </include>
   </coverage>
 </phpunit>
