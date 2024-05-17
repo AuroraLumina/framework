@@ -39,8 +39,8 @@ class Application
     /**
      * Application constructor.
      *
-     * @param Container                     $container The dependency injection container.
-     * @param RouterRequestInterface        $routerRequest The router request instance.
+     * @param Container $container The dependency injection container.
+     * @param RouterRequestInterface $routerRequest The router request instance.
      * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
     public function __construct(Container $container, RouterRequestInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
@@ -92,7 +92,8 @@ class Application
      */
     public function handle(Request $request): Response
     {
-        return $this->middlewareDispatcher->handle($request);;
+        $response = $this->middlewareDispatcher->handle($request);
+        return $response;
     }
     
     /**
@@ -101,7 +102,7 @@ class Application
      * @param bool $cleanDebuff Clear output
      * @return void
      */
-    public function run(bool $cleanDebuff = true): void
+    public function run(bool $cleanDebuff=true): void
     {
         $request = ServerRequestFactory::fromGlobals();
         $response = $this->handle($request);

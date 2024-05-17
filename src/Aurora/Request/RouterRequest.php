@@ -168,7 +168,7 @@ class RouterRequest implements RouterRequestInterface
             $controller = $this->instantiateController($class);
             if (!$controller)
             {
-                throw new \RuntimeException("Controller '{$class}' could not be instantiated");
+                throw new \RuntimeException("Controller '" . htmlspecialchars($class) . "' could not be instantiated");
             }
 
             $this->validateMethod($controller, $method, $class);

@@ -6,7 +6,6 @@ use AuroraLumina\Container;
 use AuroraLumina\Application;
 use AuroraLumina\Logger\Logger;
 use AuroraLumina\Request\RouterRequest;
-use AuroraLumina\Session\SessionManager;
 use AuroraLumina\Middleware\MiddlewareDispatcher;
 use AuroraLumina\Interface\RouterRequestInterface;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
@@ -45,7 +44,6 @@ class ApplicationFactory
     {
         static::$container = $container ?? static::$container ?? new Container();
         static::$container->bind(new Logger());
-        static::$container->bind(new SessionManager());
         static::$router = new RouterRequest(static::$container);
         static::$middlewareDispatcher = new MiddlewareDispatcher(static::$router);
         return new Application(
