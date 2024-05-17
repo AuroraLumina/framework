@@ -26,13 +26,15 @@ class SessionManager implements ServiceInterface, SessionInterface
     public function insertSession(string $key, mixed $value): bool
     {
         $sessionKey = $this->concatenateSessionKey($key);
-        if (!$this->hasSession($sessionKey)) {
-            $this->putSession($sessionKey, $value);
-            return true;
+        if ($this->hasSession($sessionKey))
+        {
+            return false;
         }
-        return false;
+
+        $this->putSession($sessionKey, $value);
+        return true;
     }
-    
+
     /**
      * Remove a session.
      * 
@@ -42,7 +44,8 @@ class SessionManager implements ServiceInterface, SessionInterface
     public function removeSession(string $key): void
     {
         $sessionKey = $this->concatenateSessionKey($key);
-        if ($this->hasSession($sessionKey)) {
+        if ($this->hasSession($sessionKey))
+        {
             $this->dropSession($sessionKey);
         }
     }
@@ -54,7 +57,7 @@ class SessionManager implements ServiceInterface, SessionInterface
      */
     public function dropSessions(): void
     {
-        $_SESSION = [];
+        session_destroy();
     }
 
     /**
