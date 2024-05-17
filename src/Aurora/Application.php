@@ -14,6 +14,7 @@ use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
 class Application
 {
+    
     /**
      * Dependency injection container.
      *
@@ -88,7 +89,7 @@ class Application
     /**
      * Handle the incoming request and return a response.
      *
-     * @param  Request  $request The incoming HTTP request
+     * @param Request $request The incoming HTTP request
      * @return Response The HTTP response
      */
     public function handle(Request $request): Response
