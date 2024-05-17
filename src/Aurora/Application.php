@@ -39,8 +39,8 @@ class Application
     /**
      * Application constructor.
      *
-     * @param Container $container The dependency injection container.
-     * @param RouterRequestInterface $routerRequest The router request instance.
+     * @param Container                     $container The dependency injection container.
+     * @param RouterRequestInterface        $routerRequest The router request instance.
      * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
     public function __construct(Container $container, RouterRequestInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
@@ -112,7 +112,7 @@ class Application
      * Emit the HTTP response.
      *
      * @param Response $response The HTTP response to emit
-     * @param bool $cleanDebuff Clear output
+     * @param bool     $cleanDebuff Clear output
      * @return void
      */
     protected function emitResponse(Response $response, bool $cleanDebuff): void
