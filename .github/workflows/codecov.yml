@@ -19,7 +19,7 @@ jobs:
           composer dump-autoload
 
       - name: Run tests and collect coverage
-        run: vendor/bin/phpunit tests --coverage-clover coverage.xml
+        run: vendor/bin/phpunit --configuration phpunit.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
