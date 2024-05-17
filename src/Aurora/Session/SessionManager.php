@@ -32,7 +32,7 @@ class SessionManager implements ServiceInterface, SessionInterface
         }
         return false;
     }
-
+    
     /**
      * Remove a session.
      * 
