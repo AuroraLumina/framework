@@ -26,15 +26,14 @@ class SessionManager implements ServiceInterface, SessionInterface
     public function insertSession(string $key, mixed $value): bool
     {
         $sessionKey = $this->concatenateSessionKey($key);
-        if ($this->hasSession($sessionKey))
+        if (!$this->hasSession($sessionKey))
         {
-            return false;
+            $this->putSession($sessionKey, $value);
+            return true;
         }
-
-        $this->putSession($sessionKey, $value);
-        return true;
+        return false;
     }
-
+    
     /**
      * Remove a session.
      * 

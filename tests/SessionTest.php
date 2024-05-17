@@ -18,4 +18,23 @@ class SessionTest extends TestCase
         $sessionManager->insertSession('key', 'value');
         $this->assertEquals('value', $sessionManager->getSession('key'));
     }
+
+    public function testInsertSession_NewKey()
+    {
+        $sessionManager = new SessionManager();
+        $key = 'test_key';
+        $value = 'test_value';
+
+        $this->assertTrue($sessionManager->insertSession($key, $value));
+        $this->assertEquals($value, $sessionManager->getSession($key));
+    }
+
+    public function testInsertSession_EmptyStringValue()
+    {
+        $sessionManager = new SessionManager();
+        $key = 'test_key';
+
+        $this->assertTrue($sessionManager->insertSession($key, ''));
+        $this->assertEquals('', $sessionManager->getSession($key));
+    }
 }
