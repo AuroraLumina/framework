@@ -4,6 +4,7 @@ namespace AuroraLumina;
 
 use AuroraLumina\Interface\ServiceInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 
 class Container implements ContainerInterface
 {
@@ -13,6 +14,30 @@ class Container implements ContainerInterface
      * @var array<ServiceInterface>
      */
     protected $instances = [];
+
+    /**
+     * Logger instance.
+     *
+     * @var LoggerInterface
+     */
+    protected LoggerInterface $logger;
+
+    /**
+     * Constructor that accepts multiple instances of ServiceInterface.
+     * 
+     * This constructor utilizes the splat operator (...) to accept a variable number of 
+     * ServiceInterface instances. Each provided instance is stored in the $instances property 
+     * for later use.
+     * 
+     * @param ServiceInterface ...$services One or more instances of ServiceInterface to be managed.
+     */
+    public function __construct(ServiceInterface ...$services)
+    {
+        foreach ($services as $service)
+        {
+            $this->bind($service);
+        }
+    }
 
     /**
      * Get an instance from an id

@@ -5,7 +5,7 @@ namespace AuroraLumina\Controller;
 use AuroraLumina\Http\Response\Response;
 use AuroraLumina\Interface\ControllerInterface;
 
-class BaseController implements ControllerInterface
+abstract class BaseController implements ControllerInterface
 {
     /**
      * Create a new response with the given body content.

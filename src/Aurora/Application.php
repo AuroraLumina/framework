@@ -9,7 +9,6 @@ use Laminas\Diactoros\ServerRequestFactory;
 use AuroraLumina\Interface\ServiceInterface;
 use AuroraLumina\Interface\RouterRequestInterface;
 use Psr\Http\Message\ResponseInterface as Response;
-use AuroraLumina\Middleware\AuthenticationMiddleware;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
