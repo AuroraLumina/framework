@@ -11,14 +11,13 @@ class SessionManager implements ServiceInterface, SessionInterface
 
     public function __construct()
     {
-        if (session_status() === PHP_SESSION_NONE)
-        {
+        if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
 
     /**
-     * Insert a session value
+     * Insert a session value.
      * 
      * @param string $key Key of the session
      * @param mixed $value Value of the session
@@ -27,8 +26,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     public function insertSession(string $key, mixed $value): bool
     {
         $sessionKey = $this->concatenateSessionKey($key);
-        if (!$this->hasSession($sessionKey))
-        {
+        if (!$this->hasSession($sessionKey)) {
             $this->putSession($sessionKey, $value);
             return true;
         }
@@ -36,7 +34,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Remove a session
+     * Remove a session.
      * 
      * @param string $key Key of the session
      * @return void
@@ -44,14 +42,13 @@ class SessionManager implements ServiceInterface, SessionInterface
     public function removeSession(string $key): void
     {
         $sessionKey = $this->concatenateSessionKey($key);
-        if ($this->hasSession($sessionKey))
-        {
+        if ($this->hasSession($sessionKey)) {
             $this->dropSession($sessionKey);
         }
     }
 
     /**
-     * Drop all sessions
+     * Drop all sessions.
      * 
      * @return void
      */
@@ -61,7 +58,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Check if a session exists by key
+     * Check if a session exists by key.
      * 
      * @param string $name Name of the session
      * @return bool
@@ -72,7 +69,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Put a value into a session
+     * Put a value into a session.
      * 
      * @param string $key The key of the session
      * @param mixed $value The value to be stored
@@ -84,7 +81,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Drop a session
+     * Drop a session.
      * 
      * @param string $key The key of the session
      * @return void
@@ -95,7 +92,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Dump all sessions for debugging
+     * Dump all sessions for debugging.
      * 
      * @return void
      */
@@ -105,7 +102,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Concatenate Session Key string
+     * Concatenate Session Key string.
      * 
      * @param string $name The key of the session
      * @return string
@@ -116,7 +113,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Retrieve a session value
+     * Retrieve a session value.
      * 
      * @param string $key The key of the session
      * @return mixed
@@ -128,7 +125,7 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Regenerate session ID
+     * Regenerate session ID.
      * 
      * @param bool $deleteOldSession Whether to delete the old session
      * @return bool
@@ -139,21 +136,20 @@ class SessionManager implements ServiceInterface, SessionInterface
     }
 
     /**
-     * Destroy the session
+     * Destroy the session.
      * 
      * @return bool
      */
     public function destroySession(): bool
     {
-        if (session_id() !== '' || isset($_COOKIE[session_name()]))
-        {
+        if (session_id() !== '' || isset($_COOKIE[session_name()])) {
             setcookie(session_name(), '', time() - 42000, '/');
         }
         return session_destroy();
     }
 
     /**
-     * Set session handler
+     * Set session handler.
      * 
      * @param SessionHandlerInterface $handler Custom session handler
      * @return bool
