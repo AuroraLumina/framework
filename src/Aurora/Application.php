@@ -20,21 +20,21 @@ class Application
      * @var Container
      */
     protected Container $container;
-
+    
     /**
      * Router request instance.
      *
      * @var RouterRequestInterface
      */
     protected RouterRequestInterface $routerRequest;
-
+    
     /**
      * Middleware dispatcher instance.
      *
      * @var MiddlewareDispatcherInterface
      */
     protected MiddlewareDispatcherInterface $middlewareDispatcher;
-
+    
     /**
      * Application constructor.
      *
@@ -43,14 +43,14 @@ class Application
      * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
     public function __construct(Container $container,
-                                RouterRequestInterface $routerRequest,
-                                MiddlewareDispatcherInterface $middlewareDispatcher)
+    RouterRequestInterface $routerRequest,
+    MiddlewareDispatcherInterface $middlewareDispatcher)
     {
         $this->container = $container;
         $this->routerRequest = $routerRequest;
         $this->middlewareDispatcher = $middlewareDispatcher;
     }
-
+    
     /**
      * Add a GET route to the application.
      *
@@ -62,7 +62,7 @@ class Application
     {
         $this->routerRequest->add('GET', $path, $handler);
     }
-
+    
     /**
      * Binds a service to the container.
      *
@@ -73,7 +73,7 @@ class Application
     {
         $this->container->bind($service);
     }
-
+    
     /**
      * Adds a middleware to the middleware chain.
      *
@@ -82,11 +82,9 @@ class Application
      */
     public function addMiddleware(MiddlewareInterface $middleware): void
     {
-        // Adds the middleware to the middleware chain in the dispatcher
         $this->middlewareDispatcher->add($middleware);
     }
-
-
+    
     /**
      * Handle the incoming request and return a response.
      *
@@ -97,7 +95,7 @@ class Application
     {
         return $this->middlewareDispatcher->handle($request);;
     }
-
+    
     /**
      * Run the application.
      *
@@ -112,7 +110,7 @@ class Application
         
         $this->emitResponse($response, $cleanDebuff);
     }
-
+    
     /**
      * Emit the HTTP response.
      *

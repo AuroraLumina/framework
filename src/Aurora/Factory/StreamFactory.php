@@ -28,8 +28,10 @@ class StreamFactory
             {
                 throw new \RuntimeException('Unable to create stream from php://memory');
             }
+            
             fwrite($resource, $content);
             rewind($resource);
+            
             return new class($resource) implements StreamInterface
             {
                 private $resource;
@@ -38,54 +40,54 @@ class StreamFactory
                 {
                     $this->resource = $resource;
                 }
-
+                
                 public function __destruct()
                 {
                     fclose($this->resource);
                 }
-
+                
                 public function close(): void
                 {
                     fclose($this->resource);
                 }
-
+                
                 public function detach()
                 {
                     return $this->resource;
                 }
-
+                
                 public function getSize(): int
                 {
                     return fstat($this->resource)['size'];
                 }
-
+                
                 public function tell(): int
                 {
                     return ftell($this->resource);
                 }
-
+                
                 public function eof(): bool
                 {
                     return feof($this->resource);
                 }
-
+                
                 public function isSeekable(): bool
                 {
                     $metaData = stream_get_meta_data($this->resource);
                     $isSeekable = isset($metaData['seekable']) && $metaData['seekable'];
                     return $isSeekable;
                 }
-
+                
                 public function seek(int $offset, int $whence = SEEK_SET): void
                 {
                     fseek($this->resource, $offset, $whence);
                 }
-
+                
                 public function rewind(): void
                 {
                     rewind($this->resource);
                 }
-
+                
                 public function isReadable(): bool
                 {
                     return is_readable($this->resource);
