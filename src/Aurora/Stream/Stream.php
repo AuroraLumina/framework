@@ -303,8 +303,7 @@ class Stream implements StreamInterface
         
         foreach ($excludedKeys as $key)
         {
-            if (isset($metadata[$key]) === true)
-            {
+            if (isset($metadata[$key]) === true) {
                 unset($metadata[$key]);
             }
         }
