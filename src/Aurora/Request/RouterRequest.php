@@ -83,7 +83,7 @@ class RouterRequest implements RouterRequestInterface
         
         if (!$this->container->has($name))
         {
-            throw new \RuntimeException("Dependency '$name' not found in the container");
+            throw new \RuntimeException("Dependency not found in the container.");
         }
 
         return $this->container->get($name);
@@ -103,12 +103,10 @@ class RouterRequest implements RouterRequestInterface
         $constructor = $reflectionClass->getConstructor();
         if (!$constructor || count($constructor->getParameters()) === 0)
         {
-            // If the class has no constructor or no parameters, instantiate without arguments.
             return $reflectionClass->newInstance();
         }
         else
         {
-            // If the class has constructor parameters, resolve them.
             return $reflectionClass->newInstanceArgs(
                 $this->resolveConstructorDependencies($constructor->getParameters())
             );
@@ -129,14 +127,14 @@ class RouterRequest implements RouterRequestInterface
         // Method existence check
         if (!method_exists($controller, $method))
         {
-            throw new \RuntimeException("Method '{$method}' not found in class '{$class}'");
+            throw new \RuntimeException("Method not found in controller class.");
         }
 
         // Method visibility check
         $reflectionMethod = new \ReflectionMethod($controller, $method);
         if (!$reflectionMethod->isPublic())
         {
-            throw new \RuntimeException("Method '{$method}' in class '{$class}' is not public");
+            throw new \RuntimeException("Method in controller class is not public.");
         }
     }
 
@@ -168,7 +166,7 @@ class RouterRequest implements RouterRequestInterface
             $controller = $this->instantiateController($class);
             if (!$controller)
             {
-                throw new \RuntimeException("Controller '{$class}' could not be instantiated");
+                throw new \RuntimeException("Controller could not be instantiated.");
             }
 
             $this->validateMethod($controller, $method, $class);
