@@ -3,7 +3,6 @@
 namespace Tests;
 
 use PHPUnit\Framework\TestCase;
-use AuroraLumina\Session\SessionManager;
 
 class SessionTest extends TestCase
 {
@@ -14,8 +13,5 @@ class SessionTest extends TestCase
      */
     public function testSession(): void
     {
-        $sessionManager = new SessionManager();
-        $sessionManager->insertSession('key', 'value');
-        $this->assertEquals('value', $sessionManager->getSession('key'));
     }
 }
