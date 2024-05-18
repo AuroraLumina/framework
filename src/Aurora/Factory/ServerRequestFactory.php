@@ -33,24 +33,25 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
      *
      * @return ServerRequestInterface The created ServerRequest instance.
      */
-    public static function fromGlobals(array $server = null, array $cookie = null, array $get = null, array $files = null): ServerRequestInterface
+    public static function fromGlobals(): ServerRequestInterface
     {
-        $server = $server ?? $_SERVER;
-        $cookie = $cookie ?? $_COOKIE;
-        $get = $get ?? $_GET;
-        $files = $files ?? $_FILES;
+        $request = new \stdClass;
+        $request->server = $_SERVER;
+        $request->cookie = $_COOKIE;
+        $request->get = $_GET;
+        $request->files = $_FILES;
 
-        $requestMethod = isset($server['REQUEST_METHOD']) === true ? stripslashes($server['REQUEST_METHOD']) : 'GET';
-        $requestUri = isset($server['REQUEST_URI']) === true ? stripslashes($server['REQUEST_URI']) : '/';
+        $requestMethod = isset($request->server['REQUEST_METHOD']) === true ? stripslashes($request->server['REQUEST_METHOD']) : 'GET';
+        $requestUri = isset($request->server['REQUEST_URI']) === true ? stripslashes($request->server['REQUEST_URI']) : '/';
 
         $factory = new self(new UriFactory());
         return $factory->createServerRequest(
             $requestMethod,
             $requestUri,
-            $server,
-            $cookie,
-            $get,
-            $files,
+            $request->server,
+            $request->cookie,
+            $request->get,
+            $request->files,
             [],
             '1.1'
         );
