@@ -23,13 +23,15 @@ class StreamFactory
     {
         if (function_exists('fopen'))
         {
-            $resource = fopen('php://memory', $mode);
+            $resource = @fopen('php://memory', $mode);
             if ($resource === false)
             {
                 throw new \RuntimeException('Unable to create stream from php://memory');
             }
+            
             fwrite($resource, $content);
             rewind($resource);
+            
             return new class($resource) implements StreamInterface
             {
                 private $resource;
@@ -38,54 +40,58 @@ class StreamFactory
                 {
                     $this->resource = $resource;
                 }
-
+                
                 public function __destruct()
                 {
-                    fclose($this->resource);
+                    if (is_resource($this->resource) === true) {
+                        fclose($this->resource);
+                    }
                 }
-
+                
                 public function close(): void
                 {
-                    fclose($this->resource);
+                    if (is_resource($this->resource) === true) {
+                        fclose($this->resource);
+                    }
                 }
-
+                
                 public function detach()
                 {
                     return $this->resource;
                 }
-
+                
                 public function getSize(): int
                 {
                     return fstat($this->resource)['size'];
                 }
-
+                
                 public function tell(): int
                 {
                     return ftell($this->resource);
                 }
-
+                
                 public function eof(): bool
                 {
                     return feof($this->resource);
                 }
-
+                
                 public function isSeekable(): bool
                 {
                     $metaData = stream_get_meta_data($this->resource);
                     $isSeekable = isset($metaData['seekable']) && $metaData['seekable'];
                     return $isSeekable;
                 }
-
+                
                 public function seek(int $offset, int $whence = SEEK_SET): void
                 {
                     fseek($this->resource, $offset, $whence);
                 }
-
+                
                 public function rewind(): void
                 {
                     rewind($this->resource);
                 }
-
+                
                 public function isReadable(): bool
                 {
                     return is_readable($this->resource);
@@ -110,10 +116,23 @@ class StreamFactory
                 {
                     return stream_get_contents($this->resource);
                 }
-
+                
+                /**
+                 * Retrieves metadata associated with the stream resource.
+                 *
+                 * @param string|null $key The specific metadata key to retrieve. If null, retrieves all metadata.
+                 *
+                 * @return mixed|null The requested metadata value if the key is provided and exists, otherwise null.
+                 */
                 public function getMetadata(string|null $key = null): mixed
                 {
-                    return $key === null ? stream_get_meta_data($this->resource) : stream_get_meta_data($this->resource)[$key];
+                    if ($key === null) {
+                        return $this->resource;
+                    } else if (isset($this->resource[$key]) === true) {
+                        return $this->resource[$key];
+                    }
+                    
+                    return null;
                 }
 
                 public function __toString(): string

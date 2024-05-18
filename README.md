@@ -1,5 +1,5 @@
 <p align="center">
-  ![Aurora](https://raw.githubusercontent.com/AuroraLumina/.github/main/images/aurora.svg)
+![Aurora](https://raw.githubusercontent.com/AuroraLumina/.github/main/images/aurora.svg)
 </p>
 
 <p align="center">

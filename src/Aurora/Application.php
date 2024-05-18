@@ -14,43 +14,42 @@ use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
 class Application
 {
+
     /**
      * Dependency injection container.
      *
      * @var Container
      */
     protected Container $container;
-
+    
     /**
      * Router request instance.
      *
      * @var RouterRequestInterface
      */
     protected RouterRequestInterface $routerRequest;
-
+    
     /**
      * Middleware dispatcher instance.
      *
      * @var MiddlewareDispatcherInterface
      */
     protected MiddlewareDispatcherInterface $middlewareDispatcher;
-
+    
     /**
-     * Application constructor.
+     * Creates a new application instance.
      *
      * @param Container $container The dependency injection container.
      * @param RouterRequestInterface $routerRequest The router request instance.
      * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
-    public function __construct(Container $container,
-                                RouterRequestInterface $routerRequest,
-                                MiddlewareDispatcherInterface $middlewareDispatcher)
+    public function __construct(Container $container, RouterRequestInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
     {
         $this->container = $container;
         $this->routerRequest = $routerRequest;
         $this->middlewareDispatcher = $middlewareDispatcher;
     }
-
+    
     /**
      * Add a GET route to the application.
      *
@@ -62,7 +61,7 @@ class Application
     {
         $this->routerRequest->add('GET', $path, $handler);
     }
-
+    
     /**
      * Binds a service to the container.
      *
@@ -73,7 +72,7 @@ class Application
     {
         $this->container->bind($service);
     }
-
+    
     /**
      * Adds a middleware to the middleware chain.
      *
@@ -82,42 +81,39 @@ class Application
      */
     public function addMiddleware(MiddlewareInterface $middleware): void
     {
-        // Adds the middleware to the middleware chain in the dispatcher
         $this->middlewareDispatcher->add($middleware);
     }
-
-
+    
     /**
      * Handle the incoming request and return a response.
      *
-     * @param  Request  $request The incoming HTTP request
+     * @param Request $request The incoming HTTP request
      * @return Response The HTTP response
      */
     public function handle(Request $request): Response
     {
-        return $this->middlewareDispatcher->handle($request);;
+        $response = $this->middlewareDispatcher->handle($request);
+        return $response;
     }
-
+    
     /**
      * Run the application.
      *
      * @param bool $cleanDebuff Clear output
      * @return void
      */
-    public function run(bool $cleanDebuff = true): void
+    public function run(bool $cleanDebuff=true): void
     {
         $request = ServerRequestFactory::fromGlobals();
-        
         $response = $this->handle($request);
-        
         $this->emitResponse($response, $cleanDebuff);
     }
-
+    
     /**
      * Emit the HTTP response.
      *
      * @param Response $response The HTTP response to emit
-     * @param bool $cleanDebuff Clear output
+     * @param bool     $cleanDebuff Clear output
      * @return void
      */
     protected function emitResponse(Response $response, bool $cleanDebuff): void
