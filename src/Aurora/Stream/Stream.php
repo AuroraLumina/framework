@@ -239,7 +239,7 @@ class Stream implements StreamInterface
             throw new RuntimeException('Stream is not readable');
         }
 
-        $result = fread($this->resource, $length);
+        $result = stream_get_contents($this->resource, $length);
 
         if ($result === false) {
             throw new RuntimeException('Error reading stream');
@@ -266,25 +266,57 @@ class Stream implements StreamInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
+    * Retrieves metadata associated with the stream resource.
+    *
+    * @param string|null $key The specific metadata key to retrieve. If null, retrieves all metadata.
+    *
+    * @return mixed|null The requested metadata value if the key is provided and exists, otherwise null.
+    */
     public function getMetadata(?string $key = null)
     {
         $metadata = stream_get_meta_data($this->resource);
-
+        
         if ($key === null) {
-            return $metadata;
+            return $this->sanitizeMetadata($metadata);
         }
-
-        return $metadata[$key] ?? null;
+        
+        if (isset($metadata[$key]) === true) {
+            return $metadata[$key];
+        }
+        
+        return null;
+    }
+    
+    /**
+    * Sanitizes metadata by removing specified keys.
+    *
+    * @param array $metadata The metadata array to sanitize.
+    *
+    * @return array The sanitized metadata array.
+    */
+    private function sanitizeMetadata(array $metadata): array
+    {
+        $excludedKeys = [
+                            'uri',
+                            'wrapper_data',
+                        ];
+        
+        foreach ($excludedKeys as $key) {
+            if (isset($metadata[$key]) === true) {
+                unset($metadata[$key]);
+            }
+        }
+        
+        return $metadata;
     }
 
     /**
-     * Set the internal stream resource.
+     * Sets the internal stream resource.
      *
-     * @param string|object|resource $stream String stream target or stream resource.
-     * @param string $mode Resource mode for stream target.
-     * @throws RuntimeException For invalid streams or resources.
+     * @param string|object|resource $stream The string stream target or stream resource.
+     * @param string $mode The resource mode for the stream target.
+     *
+     * @throws RuntimeException If the provided stream or resource is invalid.
      */
     private function setStream($stream, string $mode = 'r'): void
     {
@@ -292,13 +324,10 @@ class Stream implements StreamInterface
 
         if (is_string($stream)) {
             try {
-                $resource = fopen($stream, $mode);
-            } catch (Throwable $error) {
-                throw new RuntimeException(
-                    sprintf('Invalid stream reference provided: %s', $error->getMessage()),
-                    0,
-                    $error
-                );
+                $resource = @fopen($stream, $mode);
+            }
+            catch (Throwable $error) {
+                throw new RuntimeException('Invalid stream reference provided.');
             }
         }
 

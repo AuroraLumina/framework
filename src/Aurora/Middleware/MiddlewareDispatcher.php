@@ -24,14 +24,14 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
      * @var array<Closure>
      */
     private array $closures = [];
-
+    
     /**
      * Router request instance.
      *
      * @var RouterRequestInterface
      */
     private RouterRequestInterface $routerRequest;
-
+    
     /**
      * Application constructor.
      *
@@ -41,11 +41,11 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
     {
         $this->routerRequest = $routerRequest;
     }
-
+    
     /**
      * Adds a middleware to the dispatcher.
      *
-     * @param mixed $middleware The middleware to add
+     * @param MiddlewareInterface $middleware The middleware to add
      * @return MiddlewareDispatcherInterface This instance for method chaining
      */
     public function add(MiddlewareInterface $middleware): MiddlewareDispatcherInterface

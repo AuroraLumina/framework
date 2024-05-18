@@ -3,7 +3,6 @@
 namespace Tests;
 
 use PHPUnit\Framework\TestCase;
-use AuroraLumina\Session\SessionManager;
 
 class SessionTest extends TestCase
 {
@@ -27,6 +26,8 @@ class SessionTest extends TestCase
      */
     public function testInsertSession()
     {
+<<<<<<< HEAD
+=======
         $this->assertTrue($this->sessionManager->insertSession('key', 'value'));
         $this->assertFalse($this->sessionManager->insertSession('key', 'value'));
         $this->assertEquals('value', $this->sessionManager->getSession('key'));
@@ -46,5 +47,6 @@ class SessionTest extends TestCase
     protected function tearDown(): void
     {
         $this->sessionManager->dropSessions();
+>>>>>>> main
     }
 }

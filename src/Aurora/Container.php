@@ -51,7 +51,7 @@ class Container implements ContainerInterface
     {
         if (!$this->has($id))
         {
-            throw new \Exception("Container has not found: $id");
+            throw new \Exception("Container has not found.");
         }
 
         return $this->instances[$id];
@@ -71,7 +71,7 @@ class Container implements ContainerInterface
     /**
      * Bind an instance from an id
      *
-     * @param  ServiceInterfaceservice$id
+     * @param ServiceInterface $id
      * @return void
      *
      * @throws \Exception
@@ -82,7 +82,7 @@ class Container implements ContainerInterface
 
         if ($this->has($class))
         {
-            throw new \Exception("Instance has not found: $class");
+            throw new \Exception("Instance has not found.");
         }
 
         $this->instances[$class] = $service;
