@@ -282,9 +282,9 @@ class Stream implements StreamInterface
         
         if (isset($metadata[$key]) === true) {
             return $metadata[$key];
-        } else {
-            return null;
         }
+        
+        return null;
     }
     
     /**
@@ -301,8 +301,7 @@ class Stream implements StreamInterface
                             'wrapper_data',
                         ];
         
-        foreach ($excludedKeys as $key)
-        {
+        foreach ($excludedKeys as $key) {
             if (isset($metadata[$key]) === true) {
                 unset($metadata[$key]);
             }
