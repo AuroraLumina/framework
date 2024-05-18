@@ -1,3 +1,6 @@
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/509b60570ff148aea9f89e1dee11c801)](https://app.codacy.com/gh/AuroraLumina/framework?utm_source=github.com&utm_medium=referral&utm_content=AuroraLumina/framework&utm_campaign=Badge_Grade)
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/AuroraLumina/.github/main/images/aurora.svg" alt="Aurora Logo" width="160">
 </p>
