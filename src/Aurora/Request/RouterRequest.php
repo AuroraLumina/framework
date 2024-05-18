@@ -127,14 +127,14 @@ class RouterRequest implements RouterRequestInterface
         // Method existence check
         if (!method_exists($controller, $method))
         {
-            throw new \RuntimeException("Method '".htmlspecialchars($method, ENT_QUOTES, 'UTF-8')."' not found in class '".htmlspecialchars($class, ENT_QUOTES, 'UTF-8')."'");
+            throw new \RuntimeException("Method not found in controller class.");
         }
 
         // Method visibility check
         $reflectionMethod = new \ReflectionMethod($controller, $method);
         if (!$reflectionMethod->isPublic())
         {
-            throw new \RuntimeException("Method '".htmlspecialchars($method, ENT_QUOTES, 'UTF-8')."' in class '".htmlspecialchars($class, ENT_QUOTES, 'UTF-8')."' is not public");
+            throw new \RuntimeException("Method in controller class is not public.");
         }
     }
 

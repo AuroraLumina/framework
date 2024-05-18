@@ -121,10 +121,9 @@ class Uri implements UriInterface
 
         $scheme = str_replace('://', '', strtolower($scheme));
 
-        if (!key_exists($scheme, static::SUPPORTED_SCHEMES))
-        {
+        if (!key_exists($scheme, static::SUPPORTED_SCHEMES)) {
             throw new InvalidArgumentException(
-                'Uri scheme must be one of: "' . htmlspecialchars(implode('", "', array_keys(static::SUPPORTED_SCHEMES))) . '"'
+                'Uri scheme must be one of: "' . implode('", "', array_map('htmlspecialchars', array_keys(static::SUPPORTED_SCHEMES))) . '"'
             );
         }
 
