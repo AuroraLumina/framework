@@ -71,7 +71,7 @@ class Container implements ContainerInterface
     /**
      * Bind an instance from an id
      *
-     * @param ServiceInterfaceservice $id
+     * @param ServiceInterface $id
      * @return void
      *
      * @throws \Exception
