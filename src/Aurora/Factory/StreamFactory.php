@@ -43,16 +43,14 @@ class StreamFactory
                 
                 public function __destruct()
                 {
-                    if (is_resource($this->resource))
-                    {
+                    if (is_resource($this->resource)) {
                         fclose($this->resource);
                     }
                 }
                 
                 public function close(): void
                 {
-                    if (is_resource($this->resource))
-                    {
+                    if (is_resource($this->resource)) {
                         fclose($this->resource);
                     }
                 }

@@ -83,7 +83,7 @@ class RouterRequest implements RouterRequestInterface
         
         if (!$this->container->has($name))
         {
-            throw new \RuntimeException("Dependency '" . htmlspecialchars($name). "' not found in the container");
+            throw new \RuntimeException("Dependency not found in the container.");
         }
 
         return $this->container->get($name);
