@@ -276,12 +276,15 @@ class Stream implements StreamInterface
     {
         $metadata = stream_get_meta_data($this->resource);
         
-        if ($key === null)
-        {
+        if ($key === null) {
             return $this->sanitizeMetadata($metadata);
         }
         
-        return isset($metadata[$key]) ? $metadata[$key] : null;
+        if (isset($metadata[$key]) === true) {
+            return $metadata[$key];
+        } else {
+            return null;
+        }
     }
     
     /**
@@ -295,7 +298,7 @@ class Stream implements StreamInterface
     {
         $excludedKeys = [
             'uri',
-            'wrapper_data'
+            'wrapper_data',
         ];
         
         foreach ($excludedKeys as $key)
@@ -325,8 +328,7 @@ class Stream implements StreamInterface
             try {
                 $resource = @fopen($stream, $mode);
             }
-            catch (Throwable $error) 
-            {
+            catch (Throwable $error) {
                 throw new RuntimeException('Invalid stream reference provided.');
             }
         }

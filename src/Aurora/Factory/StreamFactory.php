@@ -43,14 +43,14 @@ class StreamFactory
                 
                 public function __destruct()
                 {
-                    if (is_resource($this->resource)) {
+                    if (is_resource($this->resource) === true) {
                         fclose($this->resource);
                     }
                 }
                 
                 public function close(): void
                 {
-                    if (is_resource($this->resource)) {
+                    if (is_resource($this->resource) === true) {
                         fclose($this->resource);
                     }
                 }
@@ -99,7 +99,7 @@ class StreamFactory
 
                 public function read(int $length): string
                 {
-                    return fgets($this->resource, $length);
+                    return fread($this->resource, $length);
                 }
 
                 public function isWritable(): bool
@@ -116,11 +116,17 @@ class StreamFactory
                 {
                     return stream_get_contents($this->resource);
                 }
-
+                
+                /**
+                 * Retrieves metadata associated with the stream resource.
+                 *
+                 * @param string|null $key The specific metadata key to retrieve. If null, retrieves all metadata.
+                 *
+                 * @return mixed|null The requested metadata value if the key is provided and exists, otherwise null.
+                 */
                 public function getMetadata(string|null $key = null): mixed
                 {
-                    if ($key === null)
-                    {
+                    if ($key === null) {
                         return $this->resource;
                     }
                     else if (isset($this->resource[$key]))
