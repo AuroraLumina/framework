@@ -297,9 +297,9 @@ class Stream implements StreamInterface
     private function sanitizeMetadata(array $metadata): array
     {
         $excludedKeys = [
-            'uri',
-            'wrapper_data',
-        ];
+                            'uri',
+                            'wrapper_data',
+                        ];
         
         foreach ($excludedKeys as $key)
         {

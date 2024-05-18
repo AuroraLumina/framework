@@ -103,12 +103,10 @@ class RouterRequest implements RouterRequestInterface
         $constructor = $reflectionClass->getConstructor();
         if (!$constructor || count($constructor->getParameters()) === 0)
         {
-            // If the class has no constructor or no parameters, instantiate without arguments.
             return $reflectionClass->newInstance();
         }
         else
         {
-            // If the class has constructor parameters, resolve them.
             return $reflectionClass->newInstanceArgs(
                 $this->resolveConstructorDependencies($constructor->getParameters())
             );
@@ -168,7 +166,7 @@ class RouterRequest implements RouterRequestInterface
             $controller = $this->instantiateController($class);
             if (!$controller)
             {
-                throw new \RuntimeException("Controller '" . htmlspecialchars($class) . "' could not be instantiated");
+                throw new \RuntimeException("Controller could not be instantiated.");
             }
 
             $this->validateMethod($controller, $method, $class);

@@ -128,13 +128,10 @@ class StreamFactory
                 {
                     if ($key === null) {
                         return $this->resource;
-                    }
-                    else if (isset($this->resource[$key]))
+                    } else if (isset($this->resource[$key])) 
                     {
                         return $this->resource[$key];
-                    }
-                    else
-                    {
+                    } else {
                         return null;
                     }
                 }
