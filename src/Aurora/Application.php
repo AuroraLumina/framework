@@ -37,7 +37,7 @@ class Application
     protected MiddlewareDispatcherInterface $middlewareDispatcher;
     
     /**
-     * Application constructor.
+     * Creates a new application instance.
      *
      * @param Container $container The dependency injection container.
      * @param RouterRequestInterface $routerRequest The router request instance.

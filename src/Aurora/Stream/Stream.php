@@ -239,7 +239,7 @@ class Stream implements StreamInterface
             throw new RuntimeException('Stream is not readable');
         }
 
-        $result = fread($this->resource, $length);
+        $result = stream_get_contents($this->resource, $length);
 
         if ($result === false) {
             throw new RuntimeException('Error reading stream');
@@ -270,13 +270,33 @@ class Stream implements StreamInterface
      */
     public function getMetadata(?string $key = null)
     {
+        // Get the metadata of the stream
         $metadata = stream_get_meta_data($this->resource);
 
+        // If no specific key is provided, return all metadata
         if ($key === null) {
-            return $metadata;
+            // Sanitize the metadata to remove any potentially sensitive information
+            return $this->sanitizeMetadata($metadata);
         }
 
-        return $metadata[$key] ?? null;
+        // Return the value corresponding to the provided key, if it exists
+        return isset($metadata[$key]) ? $metadata[$key] : null;
+    }
+
+    // Sanitize metadata to remove sensitive information
+    private function sanitizeMetadata(array $metadata): array
+    {
+        // Define keys to exclude from the sanitized metadata
+        $excludedKeys = ['uri', 'wrapper_data'];
+
+        // Loop through metadata and remove excluded keys
+        foreach ($excludedKeys as $key) {
+            if (isset($metadata[$key])) {
+                unset($metadata[$key]);
+            }
+        }
+
+        return $metadata;
     }
 
     /**
@@ -292,10 +312,12 @@ class Stream implements StreamInterface
 
         if (is_string($stream)) {
             try {
-                $resource = fopen($stream, $mode);
-            } catch (Throwable $error) {
+                $resource = @fopen($stream, $mode);
+            }
+            catch (Throwable $error)
+            {
                 throw new RuntimeException(
-                    sprintf('Invalid stream reference provided: %s', $error->getMessage()),
+                    sprintf('Invalid stream reference provided: %s', htmlspecialchars($error->getMessage(), ENT_QUOTES, 'UTF-8')),
                     0,
                     $error
                 );

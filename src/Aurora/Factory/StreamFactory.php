@@ -23,7 +23,7 @@ class StreamFactory
     {
         if (function_exists('fopen'))
         {
-            $resource = fopen('php://memory', $mode);
+            $resource = @fopen('php://memory', $mode);
             if ($resource === false)
             {
                 throw new \RuntimeException('Unable to create stream from php://memory');
@@ -95,7 +95,7 @@ class StreamFactory
 
                 public function read(int $length): string
                 {
-                    return fread($this->resource, $length);
+                    return fgets($this->resource, $length);
                 }
 
                 public function isWritable(): bool
