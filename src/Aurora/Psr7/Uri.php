@@ -123,7 +123,7 @@ class Uri implements UriInterface
 
         if (!key_exists($scheme, static::SUPPORTED_SCHEMES)) {
             throw new InvalidArgumentException(
-                'Uri scheme must be one of: "' . implode('", "', array_map('htmlspecialchars', array_keys(static::SUPPORTED_SCHEMES))) . '"'
+                'Uri scheme must be one.'
             );
         }
 
