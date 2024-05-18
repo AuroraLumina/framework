@@ -111,7 +111,7 @@ class StreamFactory
                     return stream_get_contents($this->resource);
                 }
 
-                public function getMetadata(string $key = null): mixed
+                public function getMetadata(string|null $key = null): mixed
                 {
                     return $key === null ? stream_get_meta_data($this->resource) : stream_get_meta_data($this->resource)[$key];
                 }
