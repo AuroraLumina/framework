@@ -45,6 +45,8 @@ class Emitter
      */
     private function sendHeaders(ResponseInterface $response): void
     {
+        ob_start();
+
         $statusCode = $response->getStatusCode();
         $reasonPhrase = $response->getReasonPhrase();
         $protocol = $response->getProtocolVersion();
@@ -60,6 +62,8 @@ class Emitter
         foreach ($response->getHeader('Set-Cookie') as $value) {
             header("Set-Cookie: {$value}", false);
         }
+
+        ob_end_flush();
     }
 
     /**

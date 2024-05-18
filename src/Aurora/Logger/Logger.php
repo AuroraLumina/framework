@@ -23,10 +23,10 @@ class Logger extends AbstractLogger implements ServiceInterface, LoggerInterface
      */
     public function log(mixed $level, Stringable|string $message, array $context = []): void
     {
-        echo sprintf('[%s] %s', strtoupper($level), $message) . PHP_EOL;
+        print sprintf('[%s] %s', strtoupper($level), $message) . PHP_EOL;
 
         if (!empty($context)) {
-            echo sprintf('Context: %s', json_encode($context)) . PHP_EOL;
+            print sprintf('Context: %s', json_encode($context)) . PHP_EOL;
         }
     }
 }

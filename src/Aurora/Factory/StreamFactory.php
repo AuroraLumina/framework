@@ -43,12 +43,18 @@ class StreamFactory
                 
                 public function __destruct()
                 {
-                    fclose($this->resource);
+                    if (is_resource($this->resource))
+                    {
+                        fclose($this->resource);
+                    }
                 }
                 
                 public function close(): void
                 {
-                    fclose($this->resource);
+                    if (is_resource($this->resource))
+                    {
+                        fclose($this->resource);
+                    }
                 }
                 
                 public function detach()
@@ -113,9 +119,20 @@ class StreamFactory
                     return stream_get_contents($this->resource);
                 }
 
-                public function getMetadata(string $key = null): mixed
+                public function getMetadata(string|null $key = null): mixed
                 {
-                    return $key === null ? stream_get_meta_data($this->resource) : stream_get_meta_data($this->resource)[$key];
+                    if ($key === null)
+                    {
+                        return $this->resource;
+                    }
+                    else if (isset($this->resource[$key]))
+                    {
+                        return $this->resource[$key];
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
 
                 public function __toString(): string

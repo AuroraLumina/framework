@@ -317,12 +317,8 @@ class Stream implements StreamInterface
             catch (Throwable $error)
             {
                 $message = htmlspecialchars($error->getMessage(), ENT_QUOTES, 'UTF-8');
-                
-                throw new RuntimeException(
-                    sprintf('Invalid stream reference provided: %s', $message),
-                    0,
-                    $error
-                );
+
+                throw new RuntimeException('Invalid stream reference provided.');
             }
         }
 
