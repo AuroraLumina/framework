@@ -17,3 +17,9 @@ It's recommended that you use [Composer](https://getcomposer.org/) to install Au
 ```bash
 composer require auroralumina/framework
 ```
+
+Aurora requires PHP 8.3 or newer.
+
+## Contribute
+
+<a href="https://opencollective.com/auroralumina"><img src="https://opencollective.com/auroralumina/individuals.svg?width=890"></a>
