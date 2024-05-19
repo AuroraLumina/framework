@@ -19,24 +19,24 @@ class Route
     private string $path;
 
     /**
-     * The route handler that will be called when the route matches the request.
+     * The route action that will be called when the route matches the request.
      *
      * @var string
      */
-    private string $handler;
+    private mixed $action;
 
     /**
      * Route constructor.
      *
      * @param string $method The HTTP method accepted by the route.
      * @param string $path The route pattern.
-     * @param string $handler The route handler.
+     * @param string $action The route handler.
      */
-    public function __construct(string $method, string $path, string $handler)
+    public function __construct(string $method, string $path, mixed $action)
     {
         $this->method = $method;
         $this->path = $path;
-        $this->handler = $handler;
+        $this->action = $action;
     }
 
     /**
@@ -64,9 +64,9 @@ class Route
      *
      * @return string The route handler.
      */
-    public function getHandler(): string
+    public function getAction(): mixed
     {
-        return $this->handler;
+        return $this->action;
     }
 
     /**

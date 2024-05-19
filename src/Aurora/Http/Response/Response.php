@@ -118,7 +118,6 @@ class Response implements ResponseInterface
      * @param string|resource|StreamInterface $body Stream identifier and/or actual stream resource.
      * @param int $status Status code for the response. Default is 200.
      * @param array $headers Headers for the response, if any.
-     * @throws Exception\InvalidArgumentException On any invalid element.
      */
     public function __construct($body = 'php://memory', int $status = 200, array $headers = [])
     {

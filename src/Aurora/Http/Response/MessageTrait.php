@@ -283,7 +283,7 @@ trait MessageTrait
      * Ensure header name and values are valid.
      *
      * @param string $name
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     private function assertHeader(string $name): void
     {

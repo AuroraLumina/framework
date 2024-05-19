@@ -9,8 +9,8 @@ use Psr\Http\Message\ResponseInterface;
 use AuroraLumina\Interface\ServiceInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
+use AuroraLumina\Http\Response\Response;
 use AuroraLumina\Interface\RouterRequestInterface;
-use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class RouterRequest implements RouterRequestInterface
@@ -50,13 +50,13 @@ class RouterRequest implements RouterRequestInterface
      * Adds a route to the router.
      *
      * @param string $method The HTTP method of the route.
-     * @param string $path The route path.
-     * @param string $handler The handler string in format "Class::method".
+     * @param string $path   The route path.
+     * @param mixed $handler The route action
      * @return void
      */
-    public function add(string $method, string $path, string $handler): void
+    public function add(string $method, string $path, mixed $action): void
     {
-        $this->routes[] = new Route($method, $path, $handler);
+        $this->routes[] = new Route($method, $path, $action);
     }
 
     /**
@@ -154,24 +154,34 @@ class RouterRequest implements RouterRequestInterface
     /**
      * Build a middleware callback for the given handler.
      *
-     * @param string $handler The handler string in format "Class::method".
+     * @param mixed $action The action string.
      * @return callable The middleware callback.
      */
-    protected function buildCallback(string $handler): callable
+    protected function buildCallback(mixed $action): callable
     {
-        return function (Request $request) use ($handler)
+        return function (Request $request) use ($action)
         {
-            [$class, $method] = explode('::', $handler);
-
-            $controller = $this->instantiateController($class);
-            if (!$controller)
+            if ($action instanceof \Closure)
             {
-                throw new \RuntimeException("Controller could not be instantiated.");
+                return $action($request);
             }
 
-            $this->validateMethod($controller, $method, $class);
+            if (is_array($action))
+            {
+                [$class, $method] = $action;
 
-            return $this->callControllerMethod($controller, $method, $request);
+                $controller = $this->instantiateController($class);
+                if (!$controller)
+                {
+                    throw new \RuntimeException("Controller could not be instantiated.");
+                }
+
+                $this->validateMethod($controller, $method, $class);
+
+                return $this->callControllerMethod($controller, $method, $request);
+            }
+
+            return $action;
         };
     }
 
@@ -208,8 +218,20 @@ class RouterRequest implements RouterRequestInterface
 
         if ($route = $this->findRoute($method, $path))
         {
-            $callback = $this->buildCallback($route->getHandler());
-            return $callback($request);
+            $buildCallback = $this->buildCallback($route->getAction());
+
+            $callback = $buildCallback($request);
+
+            if (is_string($callback))
+            {
+                $response = new Response();
+                $response->getBody()->write($callback);
+                return $response;
+            }
+            if ($callback instanceof ResponseInterface)
+            {
+                return $callback;
+            }
         }
 
         return new EmptyResponse(404);
