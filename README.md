@@ -15,5 +15,5 @@
 It's recommended that you use [Composer](https://getcomposer.org/) to install Aurora.
 
 ```bash
-$ composer require auroralumina/framework
+composer require auroralumina/framework
 ```
