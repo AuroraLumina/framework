@@ -191,37 +191,103 @@ class RouterRequest implements RouterRequestInterface
      * @param Request $request The request object.
      * @return Response The response object.
      */
-    private function callControllerMethod($controller, string $method, Request $request): Response
+    private function callControllerMethod($controller, string $method, Request $request, $args): Response
     {
-        return $controller->{$method}($request);
+        return $controller->{$method}($request, $args);
     }
 
     /**
      * Build a middleware callback for the given handler.
      *
      * @param mixed $action The action string.
+     * @param array $parameters The router parameters.
      * @return callable The middleware callback.
      */
-    protected function buildCallback(mixed $action): callable
+    protected function buildCallback(mixed $action, array $parameters): callable
     {
-        return function (Request $request) use ($action) {
-            if ($action instanceof \Closure) {
+        return function (Request $request) use ($action, $parameters) {
+            if ($action instanceof \Closure)
+            {
                 return $action($request);
             }
-
-            if (is_array($action)) {
+    
+            if (is_array($action))
+            {
                 [$class, $method] = $action;
-
+    
                 $controller = $this->instantiateController($class);
-
+    
                 $this->validateController($controller);
                 $this->validateMethod($controller, $method);
 
-                return $this->callControllerMethod($controller, $method, $request);
+                return $this->callControllerMethod($controller, $method, $request, $parameters);
             }
-
+    
             return $action;
         };
+    }
+
+    /**
+     * Build a regex pattern for route parameters.
+     *
+     * @param string $path The route path.
+     * @return string The regex pattern.
+     */
+    private function buildRegexPattern(string $path): string
+    {
+        return preg_replace_callback('/{([^}]+)}/', function ($matches)
+        {
+            return "(?P<{$matches[1]}>[^/]+)";
+        }, $path);
+    }
+
+    /**
+     * Escape special characters in a regex pattern.
+     *
+     * @param string $pattern The regex pattern.
+     * @return string The escaped regex pattern.
+     */
+    private function escapeRegex(string $pattern): string
+    {
+        return str_replace('/', '\/', $pattern);
+    }
+
+    /**
+     * Add regex delimiters for matching the entire path.
+     *
+     * @param string $pattern The regex pattern.
+     * @return string The pattern with delimiters.
+     */
+    private function addRegexDelimiters(string $pattern): string
+    {
+        return "^" . $pattern . "$";
+    }
+
+    /**
+     * Check if a route matches the given method and path.
+     *
+     * @param Route $route The route object.
+     * @param string $method The HTTP method of the request.
+     * @param string $path The request path.
+     * @param string $pattern The regex pattern of the route.
+     * @return bool True if the route matches, false otherwise.
+     */
+    private function routeMatches(Route $route, string $method, string $path, string $pattern): bool
+    {
+        if (preg_match('/' . $pattern . '/', $path, $matches) && $route->getMethod() === $method)
+        {
+            foreach ($matches as $key => $value)
+            {
+                if (!is_numeric($key))
+                {
+                    $route->setParameter($key, $value);
+                }
+            }
+            
+            return true;
+        }
+        
+        return false;
     }
 
     /**
@@ -235,12 +301,18 @@ class RouterRequest implements RouterRequestInterface
     {
         foreach ($this->routes as $route)
         {
-            if ($route->match($method, $path))
+            $pattern = $this->buildRegexPattern($route->getPath());
+            
+            $escapedPattern = $this->escapeRegex($pattern);
+            
+            $fullPattern = $this->addRegexDelimiters($escapedPattern);
+            
+            if ($this->routeMatches($route, $method, $path, $fullPattern))
             {
                 return $route;
             }
         }
-
+    
         return null;
     }
 
@@ -256,7 +328,7 @@ class RouterRequest implements RouterRequestInterface
 
         if ($route)
         {
-            $callback = $this->buildCallback($route->getAction())($request);
+            $callback = $this->buildCallback($route->getAction(), $route->getParameters())($request);
 
             if (is_string($callback))
             {
