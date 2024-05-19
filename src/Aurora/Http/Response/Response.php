@@ -165,7 +165,7 @@ class Response implements ResponseInterface
      *
      * @param int $code The HTTP status code to set.
      * @param string $reasonPhrase The reason phrase associated with the status code.
-     * @throws Exception\InvalidArgumentException If the provided status code is invalid.
+     * @throws \InvalidArgumentException If the provided status code is invalid.
      */
     private function setStatusCode(int $code, string $reasonPhrase = ''): void
     {

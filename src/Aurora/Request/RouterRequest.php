@@ -6,10 +6,12 @@ use ReflectionClass;
 use AuroraLumina\Container;
 use AuroraLumina\Routing\Route;
 use Psr\Http\Message\ResponseInterface;
+use AuroraLumina\Http\Response\Response;
+use AuroraLumina\Controller\BaseController;
 use AuroraLumina\Interface\ServiceInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
-use AuroraLumina\Http\Response\Response;
+use AuroraLumina\Interface\ControllerInterface;
 use AuroraLumina\Interface\RouterRequestInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -86,17 +88,29 @@ class RouterRequest implements RouterRequestInterface
             throw new \RuntimeException("Dependency not found in the container.");
         }
 
-        return $this->container->get($name);
+        $service = $this->container->get($name);
+
+        if (is_string($service))
+        {
+            $reflectionClass = new ReflectionClass($service);
+            $instance = $reflectionClass->newInstance();
+
+            $this->container->validateService($instance);
+
+            return $instance;
+        }
+
+        return $service;
     }
 
     /**
      * Instantiate a controller class with its dependencies injected.
      *
      * @param string $class The controller class name.
-     * @return object|null The instantiated controller.
+     * @return mixed The instantiated controller.
      * @throws \RuntimeException If the controller cannot be instantiated.
      */
-    protected function instantiateController(string $class): ?object
+    protected function instantiateController(string $class): mixed
     {
         $reflectionClass = new ReflectionClass($class);
 
@@ -114,28 +128,59 @@ class RouterRequest implements RouterRequestInterface
     }
 
     /**
-     * Validate if the method exists and is public in the given controller class.
+     * Validates a controller instance.
      *
-     * @param object $controller The controller object.
-     * @param string $method The method name.
-     * @param string $class The class name.
-     * @return void
-     * @throws \RuntimeException If the method doesn't exist or is not public.
+     * @param mixed $controller The controller instance to validate.
+     *
+     * @throws \RuntimeException If the controller could not be instantiated or if it does not implement ControllerInterface.
      */
-    private function validateMethod($controller, string $method, string $class): void
+    protected function validateController(mixed $controller): void
     {
-        // Method existence check
-        if (!method_exists($controller, $method))
+        if (!$controller)
         {
+            throw new \RuntimeException("Controller could not be instantiated.");
+        }
+
+        if (!$controller instanceof ControllerInterface)
+        {
+            throw new \RuntimeException("Invalid controller. Expected instance of ControllerInterface.");
+        }
+    }
+
+    /**
+     * Validates the visibility of a method in a controller class.
+     *
+     * @param ControllerInterface $controller The controller instance.
+     * @param string $method The name of the method to validate.
+     *
+     * @throws \RuntimeException If the method is not found in the controller class or if it is not public.
+     */
+    protected function validateMethod(ControllerInterface $controller, string $method): void
+    {
+        $reflectionMethod = $this->getReflectionMethod($controller, $method);
+
+        if (!$reflectionMethod->isPublic()) {
+            throw new \RuntimeException("Method in controller class is not public.");
+        }
+    }
+
+    /**
+     * Retrieves a reflection of the specified method in the controller class.
+     *
+     * @param ControllerInterface $controller The controller instance.
+     * @param string $method The name of the method to retrieve.
+     *
+     * @return \ReflectionMethod The reflection of the specified method.
+     *
+     * @throws \RuntimeException If the method is not found in the controller class.
+     */
+    private function getReflectionMethod(ControllerInterface $controller, string $method): \ReflectionMethod
+    {
+        if (!method_exists($controller, $method)) {
             throw new \RuntimeException("Method not found in controller class.");
         }
 
-        // Method visibility check
-        $reflectionMethod = new \ReflectionMethod($controller, $method);
-        if (!$reflectionMethod->isPublic())
-        {
-            throw new \RuntimeException("Method in controller class is not public.");
-        }
+        return new \ReflectionMethod($controller, $method);
     }
 
     /**
@@ -159,24 +204,18 @@ class RouterRequest implements RouterRequestInterface
      */
     protected function buildCallback(mixed $action): callable
     {
-        return function (Request $request) use ($action)
-        {
-            if ($action instanceof \Closure)
-            {
+        return function (Request $request) use ($action) {
+            if ($action instanceof \Closure) {
                 return $action($request);
             }
 
-            if (is_array($action))
-            {
+            if (is_array($action)) {
                 [$class, $method] = $action;
 
                 $controller = $this->instantiateController($class);
-                if (!$controller)
-                {
-                    throw new \RuntimeException("Controller could not be instantiated.");
-                }
 
-                $this->validateMethod($controller, $method, $class);
+                $this->validateController($controller);
+                $this->validateMethod($controller, $method);
 
                 return $this->callControllerMethod($controller, $method, $request);
             }
@@ -213,14 +252,11 @@ class RouterRequest implements RouterRequestInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $method = $request->getMethod();
-        $path = $request->getUri()->getPath();
+        $route = $this->findRoute($request->getMethod(), $request->getUri()->getPath());
 
-        if ($route = $this->findRoute($method, $path))
+        if ($route)
         {
-            $buildCallback = $this->buildCallback($route->getAction());
-
-            $callback = $buildCallback($request);
+            $callback = $this->buildCallback($route->getAction())($request);
 
             if (is_string($callback))
             {
@@ -228,6 +264,7 @@ class RouterRequest implements RouterRequestInterface
                 $response->getBody()->write($callback);
                 return $response;
             }
+
             if ($callback instanceof ResponseInterface)
             {
                 return $callback;
