@@ -84,6 +84,6 @@ class MiddlewareDispatcher implements MiddlewareDispatcherInterface
             $closure();
         }
 
-        return $finalHandler;
+        return $finalHandler->handle($request);
     }
 }

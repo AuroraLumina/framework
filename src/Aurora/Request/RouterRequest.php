@@ -2,18 +2,22 @@
 
 namespace AuroraLumina\Request;
 
+use Closure;
 use stdClass;
 use ReflectionClass;
+use ReflectionMethod;
+use RuntimeException;
+use ReflectionParameter;
 use AuroraLumina\Container;
 use AuroraLumina\Routing\Route;
+use Psr\Http\Message\RequestInterface;
+use AuroraLumina\Request\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use AuroraLumina\Http\Response\Response;
 use AuroraLumina\Interface\ServiceInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use AuroraLumina\Interface\ControllerInterface;
 use AuroraLumina\Interface\RouterRequestInterface;
-use AuroraLumina\Request\ServerRequest;
-use Psr\Http\Message\RequestInterface;
 
 class RouterRequest implements RouterRequestInterface
 {
@@ -68,11 +72,11 @@ class RouterRequest implements RouterRequestInterface
     /**
      * Resolve a single constructor parameter dependency.
      *
-     * @param \ReflectionParameter $param The parameter to resolve.
+     * @param ReflectionParameter $param The parameter to resolve.
      * @return ServiceInterface The resolved dependency.
-     * @throws \RuntimeException If the dependency cannot be resolved.
+     * @throws RuntimeException If the dependency cannot be resolved.
      */
-    protected function resolveDependency(\ReflectionParameter $param): ServiceInterface
+    protected function resolveDependency(ReflectionParameter $param): ServiceInterface
     {
         $name = $param->getType()->getName();
         
@@ -125,18 +129,18 @@ class RouterRequest implements RouterRequestInterface
      *
      * @param mixed $controller The controller instance to validate.
      *
-     * @throws \RuntimeException If the controller could not be instantiated or if it does not implement ControllerInterface.
+     * @throws RuntimeException If the controller could not be instantiated or if it does not implement ControllerInterface.
      */
     protected function validateController(mixed $controller): void
     {
         if (!$controller)
         {
-            throw new \RuntimeException("Controller could not be instantiated.");
+            throw new RuntimeException("Controller could not be instantiated.");
         }
 
         if (!$controller instanceof ControllerInterface)
         {
-            throw new \RuntimeException("Invalid controller. Expected instance of ControllerInterface.");
+            throw new RuntimeException("Invalid controller. Expected instance of ControllerInterface.");
         }
     }
 
@@ -153,7 +157,7 @@ class RouterRequest implements RouterRequestInterface
         $reflectionMethod = $this->getReflectionMethod($controller, $method);
 
         if (!$reflectionMethod->isPublic()) {
-            throw new \RuntimeException("Method in controller class is not public.");
+            throw new RuntimeException("Method in controller class is not public.");
         }
     }
 
@@ -167,13 +171,13 @@ class RouterRequest implements RouterRequestInterface
      *
      * @throws \RuntimeException If the method is not found in the controller class.
      */
-    private function getReflectionMethod(ControllerInterface $controller, string $method): \ReflectionMethod
+    private function getReflectionMethod(ControllerInterface $controller, string $method): ReflectionMethod
     {
         if (!method_exists($controller, $method)) {
-            throw new \RuntimeException("Method not found in controller class.");
+            throw new RuntimeException("Method not found in controller class.");
         }
 
-        return new \ReflectionMethod($controller, $method);
+        return new ReflectionMethod($controller, $method);
     }
 
     /**
@@ -196,12 +200,13 @@ class RouterRequest implements RouterRequestInterface
      * @param array $parameters The router parameters.
      * @return callable The middleware callback.
      */
-    protected function buildCallback(mixed $action, array $parameters): callable
+    protected function buildCallback(mixed $action): callable
     {
-        return function (ServerRequest $request) use ($action, $parameters) {
-            if ($action instanceof \Closure)
+        return function (ServerRequest $request, array $parameters) use ($action)
+        {
+            if ($action instanceof Closure)
             {
-                return $action($request);
+                return $action($request, $parameters);
             }
     
             if (is_array($action))
@@ -423,7 +428,7 @@ class RouterRequest implements RouterRequestInterface
         {
             $route = $result->route;
 
-            $callback = $this->buildCallback($route->getAction(), $route->getParameters())($request);
+            $callback = $this->buildCallback($route->getAction())($request, $route->getParameters());
 
             if (is_string($callback))
             {

@@ -177,6 +177,16 @@ class ServerRequest implements ServerRequestInterface
     }
 
     /**
+     * Get post parameter
+     *
+     * @return ?string
+     */
+    public function getPost(string $param): ?string
+    {
+        return isset($this->postParams[$param]) ? $this->postParams[$param] : null;
+    }
+
+    /**
      * Return a new instance with the specified query parameters
      *
      * @param array $query Query parameters
