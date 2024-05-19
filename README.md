@@ -9,3 +9,11 @@
 <a href="https://packagist.org/packages/auroralumina/framework"><img src="https://img.shields.io/packagist/l/auroralumina/framework" alt="License"></a>
 <a href="https://app.codacy.com/gh/AuroraLumina/framework/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img src="https://app.codacy.com/project/badge/Grade/60f838b7f2cc46f4a13356672817292b"/></a>
 </p>
+
+## Installation
+
+It's recommended that you use [Composer](https://getcomposer.org/) to install Aurora.
+
+```bash
+$ composer require auroralumina/framework
+```
