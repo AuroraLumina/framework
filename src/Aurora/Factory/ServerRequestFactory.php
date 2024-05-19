@@ -15,6 +15,12 @@ use Psr\Http\Message\ServerRequestFactoryInterface;
  */
 class ServerRequestFactory implements ServerRequestFactoryInterface
 {
+
+    private const ALLOWED_FORM_CONTENT_TYPES = [
+        'application/x-www-form-urlencoded',
+        'multipart/form-data',
+    ];
+
     /** @var UriFactoryInterface The URI factory instance. */
     private UriFactoryInterface $uriFactory;
 
@@ -29,29 +35,41 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
     }
 
     /**
+     * Checks if the provided content type indicates a form submission.
+     *
+     * @param string $contentType The content type to check.
+     * @return bool True if the content type indicates a form submission, false otherwise.
+     */
+    private function isFormContentType($contentType): bool
+    {
+        foreach (self::ALLOWED_FORM_CONTENT_TYPES as $allowedType) {
+            if (strpos($contentType, $allowedType) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Create a ServerRequest instance from the global PHP variables.
      *
-     * @return ServerRequestInterface The created ServerRequest instance.
+     * @return ServerRequest The created ServerRequest instance.
      */
-    public static function fromGlobals(): ServerRequestInterface
+    public static function fromGlobals(): ServerRequest
     {
-        $request = new \stdClass;
-        $request->server = $_SERVER;
-        $request->cookie = $_COOKIE;
-        $request->get = $_GET;
-        $request->files = $_FILES;
-
-        $requestMethod = isset($request->server['REQUEST_METHOD']) === true ? stripslashes($request->server['REQUEST_METHOD']) : 'GET';
-        $requestUri = isset($request->server['REQUEST_URI']) === true ? stripslashes($request->server['REQUEST_URI']) : '/';
+        $requestMethod = isset($_SERVER['REQUEST_METHOD']) === true ? stripslashes($_SERVER['REQUEST_METHOD']) : 'GET';
+        $requestUri = isset($_SERVER['REQUEST_URI']) === true ? stripslashes($_SERVER['REQUEST_URI']) : '/';
 
         $factory = new self(new UriFactory());
         return $factory->createServerRequest(
             $requestMethod,
             $requestUri,
-            $request->server,
-            $request->cookie,
-            $request->get,
-            $request->files,
+            $_SERVER,
+            $_COOKIE,
+            [],
+            [],
+            $_FILES,
             [],
             '1.1'
         );
@@ -72,17 +90,17 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
      */
     public function createServerRequest(
         string $method,
-        $uri,
+        mixed $uri,
         array $serverParams = [],
         array $cookieParams = [],
         array $queryParams = [],
+        array $postParams = [],
         array $uploadedFiles = [],
         array $parsedBody = [],
         string $protocolVersion = '1.1'
-    ): ServerRequestInterface {
+    ): ServerRequest {
         $uri = $this->uriFactory->createUri($uri);
-    
-        // Parse headers from the server params
+        
         $headers = [];
         foreach ($serverParams as $name => $value)
         {
@@ -92,6 +110,12 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
                 $name = strtolower(str_replace('_', '-', $name));
                 $headers[$name] = [$value];
             }
+        }
+        
+        $queryParams = array_merge($queryParams, $_GET);
+        if ($method === 'POST' && $this->isFormContentType($serverParams['CONTENT_TYPE']))
+        {
+            $postParams = array_merge($postParams, $_POST);
         }
     
         // Create a stream from php://input
@@ -106,6 +130,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
             $serverParams,
             $cookieParams,
             $queryParams,
+            $postParams,
             $uploadedFiles,
             $parsedBody,
             $attributes,

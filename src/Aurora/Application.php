@@ -63,6 +63,18 @@ class Application
     }
     
     /**
+     * Add a POST route to the application.
+     *
+     * @param string $path  The route path
+     * @param mixed $action The route action
+     * @return void
+     */
+    public function post(string $path, mixed $action): void
+    {
+        $this->routerRequest->add('POST', $path, $action);
+    }
+    
+    /**
      * Binds a service to the container.
      *
      * @param ServiceInterface $service The service to be bound.

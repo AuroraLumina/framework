@@ -25,6 +25,11 @@ class ServerRequest implements ServerRequestInterface
      * @var array Query parameters
      */
     private array $queryParams = [];
+    
+    /**
+     * @var array Post parameters
+     */
+    private array $postParams = [];
 
     /**
      * @var array Uploaded files
@@ -77,6 +82,7 @@ class ServerRequest implements ServerRequestInterface
      * @param array $serverParams Server parameters
      * @param array $cookieParams Cookie parameters
      * @param array $queryParams Query parameters
+     * @param array $postParams Post parameters
      * @param array $uploadedFiles Uploaded files
      * @param array $parsedBody Parsed body
      * @param array $attributes Attributes
@@ -91,6 +97,7 @@ class ServerRequest implements ServerRequestInterface
         array $serverParams,
         array $cookieParams,
         array $queryParams,
+        array $postParams,
         array $uploadedFiles,
         array $parsedBody,
         array $attributes,
@@ -104,6 +111,7 @@ class ServerRequest implements ServerRequestInterface
         $this->serverParams = $serverParams;
         $this->cookieParams = $cookieParams;
         $this->queryParams = $queryParams;
+        $this->postParams = $postParams;
         $this->uploadedFiles = $uploadedFiles;
         $this->parsedBody = $parsedBody;
         $this->attributes = $attributes;
@@ -156,6 +164,16 @@ class ServerRequest implements ServerRequestInterface
     public function getQueryParams(): array
     {
         return $this->queryParams;
+    }
+
+    /**
+     * Get post parameters
+     *
+     * @return array
+     */
+    public function getPostParams(): array
+    {
+        return $this->postParams;
     }
 
     /**

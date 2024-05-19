@@ -2,18 +2,18 @@
 
 namespace AuroraLumina\Request;
 
+use stdClass;
 use ReflectionClass;
 use AuroraLumina\Container;
 use AuroraLumina\Routing\Route;
 use Psr\Http\Message\ResponseInterface;
 use AuroraLumina\Http\Response\Response;
-use AuroraLumina\Controller\BaseController;
 use AuroraLumina\Interface\ServiceInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use AuroraLumina\Interface\ControllerInterface;
 use AuroraLumina\Interface\RouterRequestInterface;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use AuroraLumina\Request\ServerRequest;
+use Psr\Http\Message\RequestInterface;
 
 class RouterRequest implements RouterRequestInterface
 {
@@ -32,12 +32,6 @@ class RouterRequest implements RouterRequestInterface
     protected array $routes = [];
 
     /**
-     * 
-     * @var ResponseInterface
-     */
-    protected ResponseInterface $response;
-
-    /**
      * Constructs a new Router instance.
      *
      * @param Container $container The dependency injection container.
@@ -45,7 +39,6 @@ class RouterRequest implements RouterRequestInterface
     public function __construct(Container $container)
     {
         $this->container = $container;
-        $this->response = new EmptyResponse();
     }
 
     /**
@@ -188,10 +181,10 @@ class RouterRequest implements RouterRequestInterface
      *
      * @param object $controller The controller object.
      * @param string $method The method name.
-     * @param Request $request The request object.
+     * @param ServerRequest $request The request object.
      * @return Response The response object.
      */
-    private function callControllerMethod($controller, string $method, Request $request, $args): Response
+    private function callControllerMethod($controller, string $method, ServerRequest $request, $args): Response
     {
         return $controller->{$method}($request, $args);
     }
@@ -205,7 +198,7 @@ class RouterRequest implements RouterRequestInterface
      */
     protected function buildCallback(mixed $action, array $parameters): callable
     {
-        return function (Request $request) use ($action, $parameters) {
+        return function (ServerRequest $request) use ($action, $parameters) {
             if ($action instanceof \Closure)
             {
                 return $action($request);
@@ -274,15 +267,11 @@ class RouterRequest implements RouterRequestInterface
      */
     private function routeMatches(Route $route, string $method, string $path, string $pattern): bool
     {
-        if (preg_match('/' . $pattern . '/', $path, $matches) && $route->getMethod() === $method)
+        if ($this->matchesPath($path, $pattern))
         {
-            foreach ($matches as $key => $value)
-            {
-                if (!is_numeric($key))
-                {
-                    $route->setParameter($key, $value);
-                }
-            }
+            $this->setRouteParametersBasedOnMethod($route, $method);
+            
+            $this->setRouteParametersFromPath($route, $path, $pattern);
             
             return true;
         }
@@ -291,48 +280,154 @@ class RouterRequest implements RouterRequestInterface
     }
 
     /**
-     * Find a route that matches the given request method and path.
+     * Check if a route matches the given method and path.
+     *
+     * @param Route $route The route object.
+     * @param string $method The HTTP method of the request.
+     * @param string $path The request path.
+     * @param string $pattern The regex pattern of the route.
+     * @return bool True if the route matches, false otherwise.
+     */
+    private function matchesPath(string $path, string $pattern): bool
+    {
+        return preg_match('/' . $pattern . '/', $path, $matches);
+    }
+
+    /**
+     * Set route parameters based on the request method.
+     *
+     * @param Route $route The route object.
+     * @param string $method The HTTP method of the request.
+     * @return void
+     */
+    private function setRouteParametersBasedOnMethod(Route $route, string $method): void
+    {
+        if ($method === 'POST')
+        {
+            // Set route parameters from $_POST
+            foreach ($_POST as $key => $value)
+            {
+                $route->setParameter($key, $value);
+            }
+        }
+    }
+
+    /**
+     * Set route parameters extracted from the path.
+     *
+     * @param Route $route The route object.
+     * @param string $path The request path.
+     * @param string $pattern The regex pattern of the route.
+     * @return void
+     */
+    private function setRouteParametersFromPath(Route $route, string $path, string $pattern): void
+    {
+        // Set route parameters from the request path
+        preg_match('/' . $pattern . '/', $path, $matches);
+        foreach ($matches as $key => $value)
+        {
+            if (!is_numeric($key))
+            {
+                $route->setParameter($key, $value);
+            }
+        }
+    }
+
+    /**
+     * Find the status code of the matching route.
      *
      * @param string $method The request method.
      * @param string $path The request path.
-     * @return Route|null The matching route or null if no match was found.
+     * @return int The status code.
      */
-    protected function findRoute(string $method, string $path): ?Route
+    protected function findMatchingRouteStatus(string $method, string $path): int
     {
+        $status = 404;
+        
         foreach ($this->routes as $route)
         {
             $pattern = $this->buildRegexPattern($route->getPath());
-            
             $escapedPattern = $this->escapeRegex($pattern);
-            
             $fullPattern = $this->addRegexDelimiters($escapedPattern);
-            
+
             if ($this->routeMatches($route, $method, $path, $fullPattern))
             {
-                return $route;
+                if ($route->getMethod() !== $method)
+                {
+                    $status = 405;
+                }
+                else
+                {
+                    $status = 200;
+                }
             }
         }
-    
-        return null;
+
+        return $status;
+    }
+
+    /**
+     * Find the matching route object.
+     *
+     * @param string $method The request method.
+     * @param string $path The request path.
+     * @return Route|null The matching route object, or null if no match is found.
+     */
+    protected function findMatchingRoute(string $method, string $path): ?Route
+    {
+        $matchingRoute = null;
+
+        foreach ($this->routes as $route)
+        {
+            $pattern = $this->buildRegexPattern($route->getPath());
+            $escapedPattern = $this->escapeRegex($pattern);
+            $fullPattern = $this->addRegexDelimiters($escapedPattern);
+
+            if ($this->routeMatches($route, $method, $path, $fullPattern))
+            {
+                if ($route->getMethod() === $method) {
+                    $matchingRoute = $route;
+                }
+            }
+        }
+
+        return $matchingRoute;
+    }
+
+    /**
+     * Find the matching route.
+     *
+     * @param string $method The request method.
+     * @param string $path The request path.
+     * @return stdClass An object containing the status and the matching route.
+     */
+    protected function findRoute(string $method, string $path): stdClass
+    {
+        $result = new stdClass();
+        $result->status = $this->findMatchingRouteStatus($method, $path);
+        $result->route = $this->findMatchingRoute($method, $path);
+        return $result;
     }
 
     /**
      * Processes a request.
      *
-     * @param ServerRequestInterface $request The request object.
+     * @param ServerRequest $request The request object.
      * @return ResponseInterface The response object.
      */
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    public function handle(RequestInterface $request): ResponseInterface
     {
-        $route = $this->findRoute($request->getMethod(), $request->getUri()->getPath());
+        $result = $this->findRoute($request->getMethod(), $request->getUri()->getPath());
 
-        if ($route)
+        if ($result->route)
         {
+            $route = $result->route;
+
             $callback = $this->buildCallback($route->getAction(), $route->getParameters())($request);
 
             if (is_string($callback))
             {
-                $response = new Response();
+                $response = new Response($result->status);
                 $response->getBody()->write($callback);
                 return $response;
             }
@@ -343,6 +438,6 @@ class RouterRequest implements RouterRequestInterface
             }
         }
 
-        return new EmptyResponse(404);
+        return new EmptyResponse($result->status ? $result->status : 404);
     }
 }
