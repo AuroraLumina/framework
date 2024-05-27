@@ -2,11 +2,7 @@
 
 namespace AuroraLumina\Interface;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-
-interface RouterRequestInterface extends RequestHandlerInterface, RouterInterface
+interface RouterInterface
 {
     /**
      * Adds a middleware to the dispatcher.
@@ -15,14 +11,6 @@ interface RouterRequestInterface extends RequestHandlerInterface, RouterInterfac
      * @return MiddlewareDispatcherInterface This instance for method chaining.
      */
     public function add(string $method, string $path, string $handler): void;
-
-    /**
-     * Processes a request.
-     *
-     * @param ServerRequestInterface $request The request object.
-     * @return ResponseInterface The response object.
-     */
-    public function handle(ServerRequestInterface $request): ResponseInterface;
 
     /**
      * Add a POST route to the application.

@@ -5,6 +5,7 @@ namespace AuroraLumina;
 use AuroraLumina\Http\Emitter;
 use Psr\Http\Server\MiddlewareInterface;
 
+use AuroraLumina\Interface\RouterInterface;
 use AuroraLumina\Interface\ServiceInterface;
 use AuroraLumina\Factory\ServerRequestFactory;
 use AuroraLumina\Interface\RouterRequestInterface;
@@ -25,9 +26,9 @@ class Application
     /**
      * Router request instance.
      *
-     * @var RouterRequestInterface
+     * @var RouterInterface
      */
-    protected RouterRequestInterface $routerRequest;
+    protected RouterInterface $routerRequest;
     
     /**
      * Middleware dispatcher instance.
@@ -40,10 +41,10 @@ class Application
      * Creates a new application instance.
      *
      * @param Container $container The dependency injection container.
-     * @param RouterRequestInterface $routerRequest The router request instance.
+     * @param RouterInterface $routerRequest The router request instance.
      * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
-    public function __construct(Container $container, RouterRequestInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
+    public function __construct(Container $container, RouterInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
     {
         $this->container = $container;
         $this->routerRequest = $routerRequest;
@@ -51,27 +52,13 @@ class Application
     }
     
     /**
-     * Add a GET route to the application.
+     * Get Router Request
      *
-     * @param string $path  The route path
-     * @param mixed $action The route action
-     * @return void
+     * @return RouterInterface
      */
-    public function get(string $path, mixed $action): void
+    public function getRouterRequest(): RouterInterface
     {
-        $this->routerRequest->add('GET', $path, $action);
-    }
-    
-    /**
-     * Add a POST route to the application.
-     *
-     * @param string $path  The route path
-     * @param mixed $action The route action
-     * @return void
-     */
-    public function post(string $path, mixed $action): void
-    {
-        $this->routerRequest->add('POST', $path, $action);
+        return $this->routerRequest;
     }
     
     /**
@@ -128,7 +115,7 @@ class Application
      * @param bool     $cleanDebuff Clear output
      * @return void
      */
-    protected function emitResponse(Response $response, bool $cleanDebuff): void
+    private function emitResponse(Response $response, bool $cleanDebuff): void
     {
         (new Emitter())->emit($response, $cleanDebuff);
     }

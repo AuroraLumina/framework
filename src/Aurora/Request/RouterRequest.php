@@ -57,6 +57,30 @@ class RouterRequest implements RouterRequestInterface
     {
         $this->routes[] = new Route($method, $path, $action);
     }
+    
+    /**
+     * Add a GET route to the application.
+     *
+     * @param string $path  The route path
+     * @param mixed $action The route action
+     * @return void
+     */
+    public function get(string $path, mixed $action): void
+    {
+        $this->add('GET', $path, $action);
+    }
+    
+    /**
+     * Add a POST route to the application.
+     *
+     * @param string $path  The route path
+     * @param mixed $action The route action
+     * @return void
+     */
+    public function post(string $path, mixed $action): void
+    {
+        $this->add('POST', $path, $action);
+    }
 
     /**
      * Resolve constructor dependencies for a given set of parameters.
@@ -82,7 +106,7 @@ class RouterRequest implements RouterRequestInterface
         
         if (!$this->container->has($name))
         {
-            throw new \RuntimeException("Dependency not found in the container.");
+            throw new RuntimeException("Dependency not found in the container.");
         }
 
         $service = $this->container->get($name);
@@ -167,9 +191,9 @@ class RouterRequest implements RouterRequestInterface
      * @param ControllerInterface $controller The controller instance.
      * @param string $method The name of the method to retrieve.
      *
-     * @return \ReflectionMethod The reflection of the specified method.
+     * @return ReflectionMethod The reflection of the specified method.
      *
-     * @throws \RuntimeException If the method is not found in the controller class.
+     * @throws RuntimeException If the method is not found in the controller class.
      */
     private function getReflectionMethod(ControllerInterface $controller, string $method): ReflectionMethod
     {
@@ -329,6 +353,7 @@ class RouterRequest implements RouterRequestInterface
     {
         // Set route parameters from the request path
         preg_match('/' . $pattern . '/', $path, $matches);
+        
         foreach ($matches as $key => $value)
         {
             if (!is_numeric($key))

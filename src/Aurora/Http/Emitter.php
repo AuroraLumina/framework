@@ -32,7 +32,8 @@ class Emitter
      */
     private function cleanOutputBuffer(): void
     {
-        while (ob_get_level() > 0) {
+        while (ob_get_level() > 0)
+        {
             ob_end_clean();
         }
     }
