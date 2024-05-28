@@ -7,6 +7,8 @@ use stdClass;
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
+use ReflectionFunction;
+use ReflectionException;
 use ReflectionParameter;
 use AuroraLumina\Container;
 use AuroraLumina\Routing\Route;
@@ -18,7 +20,6 @@ use AuroraLumina\Interface\ServiceInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use AuroraLumina\Interface\ControllerInterface;
 use AuroraLumina\Interface\RouterRequestInterface;
-use ReflectionFunction;
 
 class RouterRequest implements RouterRequestInterface
 {
@@ -187,15 +188,19 @@ class RouterRequest implements RouterRequestInterface
      * @param object $controller The controller object.
      * @param string $method The method name.
      * @param ServerRequest $request The request object.
+     * @param array $args The arguments array.
      * @return Response The response object.
+     * @throws ReflectionException
      */
-    private function callControllerMethod($controller, string $method, ServerRequest $request, $args): Response
+    private function callControllerMethod($controller, string $method, ServerRequest $request, array $args): Response
     {
-        $function = new ReflectionMethod($controller, $method);
+        $function = $this->getReflectionMethod($controller, $method);
         
-        $parameters = $this->resolveConstructorDependencies(array_slice($function->getParameters(), 2));
-
-        return $controller->{$method}($request, $args, ...$parameters);
+        $parameters = array_slice($function->getParameters(), 2);
+        
+        $resolvedParameters = $this->resolveConstructorDependencies($parameters);
+        
+        return $function->invokeArgs($controller, array_merge([$request, $args], $resolvedParameters));
     }
 
     /**
@@ -211,11 +216,13 @@ class RouterRequest implements RouterRequestInterface
         {
             if ($action instanceof Closure)
             {
-                $function = new ReflectionFunction($action);
-
-                $parameters = $this->resolveConstructorDependencies(array_slice($function->getParameters(), 2));
-
-                return $function->invoke($request, $args, ...$parameters);
+                $reflectionFunction = new ReflectionFunction($action);
+                
+                $parameters = array_slice($reflectionFunction->getParameters(), 2);
+                
+                $resolvedParameters = $this->resolveConstructorDependencies($parameters);
+                
+                return $reflectionFunction->invokeArgs([$request, $args, ...$resolvedParameters]);
             }
     
             if (is_array($action))
