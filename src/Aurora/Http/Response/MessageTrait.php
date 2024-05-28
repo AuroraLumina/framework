@@ -2,6 +2,7 @@
 
 namespace AuroraLumina\Http\Response;
 
+use InvalidArgumentException;
 use AuroraLumina\Stream\Stream;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -213,7 +214,7 @@ trait MessageTrait
 
         if (! is_string($stream) && ! is_resource($stream))
         {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Stream must be a string stream resource identifier, an actual stream resource, or a Psr\Http\Message\StreamInterface implementation'
             );
         }
@@ -243,12 +244,12 @@ trait MessageTrait
     {
         if (empty($version))
         {
-            throw new \InvalidArgumentException('HTTP protocol version can not be empty');
+            throw new InvalidArgumentException('HTTP protocol version can not be empty');
         }
 
         // HTTP/1 uses a "<major>.<minor>" numbering scheme to indicate versions of the protocol, while HTTP/2 does not.
         if (! preg_match('#^(1\.[01]|2(\.0)?)$#', $version)) {
-            throw new \InvalidArgumentException('Unsupported HTTP protocol version provided.');
+            throw new InvalidArgumentException('Unsupported HTTP protocol version provided.');
         }
     }
 
@@ -262,7 +263,7 @@ trait MessageTrait
 
         if ([] === $values)
         {
-            throw new \InvalidArgumentException('Invalid header value: must be a string or array of strings; cannot be an empty array');
+            throw new InvalidArgumentException('Invalid header value: must be a string or array of strings; cannot be an empty array');
         }
 
         return array_map(static function ($value): string
@@ -283,7 +284,7 @@ trait MessageTrait
      * Ensure header name and values are valid.
      *
      * @param string $name
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function assertHeader(string $name): void
     {
@@ -294,11 +295,11 @@ trait MessageTrait
     {
         if (!is_string($value) && ! is_numeric($value))
         {
-            throw new \InvalidArgumentException(sprintf('Invalid header value type; must be a string or numeric; received %s', get_debug_type($value)));
+            throw new InvalidArgumentException(sprintf('Invalid header value type; must be a string or numeric; received %s', get_debug_type($value)));
         }
         if (!self::isValid($value))
         {
-            throw new \InvalidArgumentException(sprintf('"%s" is not valid header value', $value));
+            throw new InvalidArgumentException(sprintf('"%s" is not valid header value', $value));
         }
     }
 
@@ -306,7 +307,7 @@ trait MessageTrait
     {
         if (!preg_match('/^[a-zA-Z0-9\'`#$%&*+.^_|~!-]+$/', $name))
         {
-            throw new \InvalidArgumentException(sprintf('Invalid header name "%s"; must be a valid HTTP header name', $name));
+            throw new InvalidArgumentException(sprintf('Invalid header name "%s"; must be a valid HTTP header name', $name));
         }
     }
 

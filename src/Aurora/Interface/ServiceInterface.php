@@ -4,5 +4,4 @@ namespace AuroraLumina\Interface;
 
 interface ServiceInterface
 {
-    
 }

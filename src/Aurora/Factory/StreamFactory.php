@@ -2,6 +2,7 @@
 
 namespace AuroraLumina\Factory;
 
+use RuntimeException;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -17,7 +18,7 @@ class StreamFactory
      * @param string $content The initial content of the stream.
      * @param string $mode The mode for opening the stream.
      * @return StreamInterface The created stream instance.
-     * @throws \RuntimeException If unable to create the stream.
+     * @throws RuntimeException If unable to create the stream.
      */
     public function createStream(string $content = '', string $mode = 'r'): StreamInterface
     {
@@ -26,7 +27,7 @@ class StreamFactory
             $resource = @fopen('php://memory', $mode);
             if ($resource === false)
             {
-                throw new \RuntimeException('Unable to create stream from php://memory');
+                throw new RuntimeException('Unable to create stream from php://memory');
             }
             
             fwrite($resource, $content);
@@ -43,14 +44,16 @@ class StreamFactory
                 
                 public function __destruct()
                 {
-                    if (is_resource($this->resource) === true) {
+                    if (is_resource($this->resource) === true)
+                    {
                         fclose($this->resource);
                     }
                 }
                 
                 public function close(): void
                 {
-                    if (is_resource($this->resource) === true) {
+                    if (is_resource($this->resource) === true)
+                    {
                         fclose($this->resource);
                     }
                 }
@@ -126,9 +129,12 @@ class StreamFactory
                  */
                 public function getMetadata(string|null $key = null): mixed
                 {
-                    if ($key === null) {
+                    if ($key === null)
+                    {
                         return $this->resource;
-                    } else if (isset($this->resource[$key]) === true) {
+                    }
+                    else if (isset($this->resource[$key]) === true)
+                    {
                         return $this->resource[$key];
                     }
                     
@@ -141,6 +147,6 @@ class StreamFactory
                 }
             };
         }
-        throw new \RuntimeException('Unable to create stream from php://memory');
+        throw new RuntimeException('Unable to create stream from php://memory');
     }
 }

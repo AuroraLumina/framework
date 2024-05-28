@@ -42,8 +42,10 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
      */
     private function isFormContentType($contentType): bool
     {
-        foreach (self::ALLOWED_FORM_CONTENT_TYPES as $allowedType) {
-            if (strpos($contentType, $allowedType) !== false) {
+        foreach (self::ALLOWED_FORM_CONTENT_TYPES as $allowedType)
+        {
+            if (strpos($contentType, $allowedType) !== false)
+            {
                 return true;
             }
         }
@@ -58,8 +60,8 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
      */
     public static function fromGlobals(): ServerRequest
     {
-        $requestMethod = isset($_SERVER['REQUEST_METHOD']) === true ? stripslashes($_SERVER['REQUEST_METHOD']) : 'GET';
-        $requestUri = isset($_SERVER['REQUEST_URI']) === true ? stripslashes($_SERVER['REQUEST_URI']) : '/';
+        $requestMethod  = isset($_SERVER['REQUEST_METHOD']) === true ? stripslashes($_SERVER['REQUEST_METHOD']) : 'GET';
+        $requestUri     = isset($_SERVER['REQUEST_URI']) === true ? stripslashes($_SERVER['REQUEST_URI']) : '/';
 
         $factory = new self(new UriFactory());
         return $factory->createServerRequest(

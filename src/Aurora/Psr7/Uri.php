@@ -73,13 +73,13 @@ class Uri implements UriInterface
         string $user = '',
         string $password = ''
     ) {
-        $this->scheme = $this->filterScheme($scheme);
-        $this->host = $this->filterHost($host);
-        $this->port = $this->filterPort($port);
-        $this->path = $this->filterPath($path);
-        $this->query = $this->filterQuery($query);
+        $this->scheme   = $this->filterScheme($scheme);
+        $this->host     = $this->filterHost($host);
+        $this->port     = $this->filterPort($port);
+        $this->path     = $this->filterPath($path);
+        $this->query    = $this->filterQuery($query);
         $this->fragment = $this->filterFragment($fragment);
-        $this->user = $this->filterUserInfo($user);
+        $this->user     = $this->filterUserInfo($user);
         $this->password = $this->filterUserInfo($password);
     }
 
@@ -121,7 +121,8 @@ class Uri implements UriInterface
 
         $scheme = str_replace('://', '', strtolower($scheme));
 
-        if (!key_exists($scheme, static::SUPPORTED_SCHEMES)) {
+        if (!key_exists($scheme, static::SUPPORTED_SCHEMES))
+        {
             throw new InvalidArgumentException(
                 'Uri scheme must be one.'
             );
@@ -135,9 +136,9 @@ class Uri implements UriInterface
      */
     public function getAuthority(): string
     {
-        $userInfo = $this->getUserInfo();
-        $host = $this->getHost();
-        $port = $this->getPort();
+        $userInfo   = $this->getUserInfo();
+        $host       = $this->getHost();
+        $port       = $this->getPort();
 
         return ($userInfo !== '') ? $userInfo . '@' : '' . $host . ($port !== null ? ':' . $port : '');
     }
@@ -448,7 +449,7 @@ class Uri implements UriInterface
 
         if (!is_string($fragment))
         {
-            throw new \InvalidArgumentException('Uri fragment must be a string.');
+            throw new InvalidArgumentException('Uri fragment must be a string.');
         }
 
         $fragment = ltrim($fragment, '#');

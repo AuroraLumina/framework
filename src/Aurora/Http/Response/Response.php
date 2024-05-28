@@ -2,10 +2,11 @@
 
 namespace AuroraLumina\Http\Response;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
-
 use function sprintf;
+use InvalidArgumentException;
+
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * HTTP response encapsulation.
@@ -165,7 +166,7 @@ class Response implements ResponseInterface
      *
      * @param int $code The HTTP status code to set.
      * @param string $reasonPhrase The reason phrase associated with the status code.
-     * @throws \InvalidArgumentException If the provided status code is invalid.
+     * @throws InvalidArgumentException If the provided status code is invalid.
      */
     private function setStatusCode(int $code, string $reasonPhrase = ''): void
     {
@@ -173,7 +174,7 @@ class Response implements ResponseInterface
             $code < static::MIN_STATUS_CODE_VALUE
             || $code > static::MAX_STATUS_CODE_VALUE
         ) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Invalid status code "%s"; must be an integer between %d and %d, inclusive',
                 $code,
                 static::MIN_STATUS_CODE_VALUE,

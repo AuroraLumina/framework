@@ -39,17 +39,22 @@ class Stream implements StreamInterface
      */
     public function __toString(): string
     {
-        if (!$this->isReadable()) {
+        if (!$this->isReadable())
+        {
             return '';
         }
 
-        try {
-            if ($this->isSeekable()) {
+        try
+        {
+            if ($this->isSeekable())
+            {
                 $this->rewind();
             }
 
             return $this->getContents();
-        } catch (RuntimeException) {
+        }
+        catch (RuntimeException)
+        {
             return '';
         }
     }
@@ -59,7 +64,8 @@ class Stream implements StreamInterface
      */
     public function close(): void
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             return;
         }
 
@@ -96,7 +102,8 @@ class Stream implements StreamInterface
      */
     public function getSize(): ?int
     {
-        if (null === $this->resource) {
+        if (null === $this->resource)
+        {
             return null;
         }
 
@@ -109,12 +116,14 @@ class Stream implements StreamInterface
      */
     public function tell(): int
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             throw new RuntimeException('No resource available; cannot seek position');
         }
 
         $result = ftell($this->resource);
-        if (!is_int($result)) {
+        if (!is_int($result))
+        {
             throw new RuntimeException('Error seeking within stream');
         }
 
@@ -126,7 +135,8 @@ class Stream implements StreamInterface
      */
     public function eof(): bool
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             return true;
         }
 
@@ -138,7 +148,8 @@ class Stream implements StreamInterface
      */
     public function isSeekable(): bool
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             return false;
         }
 
@@ -151,17 +162,20 @@ class Stream implements StreamInterface
      */
     public function seek(int $offset, int $whence = SEEK_SET): void
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             throw new RuntimeException('No resource available; cannot seek position');
         }
 
-        if (!$this->isSeekable()) {
+        if (!$this->isSeekable())
+        {
             throw new RuntimeException('Stream is not seekable');
         }
 
         $result = fseek($this->resource, $offset, $whence);
 
-        if (0 !== $result) {
+        if (0 !== $result)
+        {
             throw new RuntimeException('Error seeking within stream');
         }
     }
@@ -179,7 +193,8 @@ class Stream implements StreamInterface
      */
     public function isWritable(): bool
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             return false;
         }
 
@@ -194,17 +209,20 @@ class Stream implements StreamInterface
      */
     public function write($string): int
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             throw new RuntimeException('No resource available; cannot seek position');
         }
 
-        if (!$this->isWritable()) {
+        if (!$this->isWritable())
+        {
             throw new RuntimeException('Stream is not writable');
         }
 
         $result = fwrite($this->resource, $string);
 
-        if ($result === false) {
+        if ($result === false)
+        {
             throw new RuntimeException('Error writing to stream');
         }
 
@@ -216,7 +234,8 @@ class Stream implements StreamInterface
      */
     public function isReadable(): bool
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             return false;
         }
 
@@ -231,17 +250,20 @@ class Stream implements StreamInterface
      */
     public function read(int $length): string
     {
-        if (!$this->resource) {
+        if (!$this->resource)
+        {
             throw new RuntimeException('Stream is not readable');
         }
 
-        if (!$this->isReadable()) {
+        if (!$this->isReadable())
+        {
             throw new RuntimeException('Stream is not readable');
         }
 
         $result = stream_get_contents($this->resource, $length);
 
-        if ($result === false) {
+        if ($result === false)
+        {
             throw new RuntimeException('Error reading stream');
         }
 
@@ -258,7 +280,8 @@ class Stream implements StreamInterface
         }
 
         $contents = stream_get_contents($this->resource);
-        if ($contents === false) {
+        if ($contents === false)
+        {
             throw new RuntimeException('Error reading stream contents');
         }
 
@@ -276,11 +299,13 @@ class Stream implements StreamInterface
     {
         $metadata = stream_get_meta_data($this->resource);
         
-        if ($key === null) {
+        if ($key === null)
+        {
             return $this->sanitizeMetadata($metadata);
         }
         
-        if (isset($metadata[$key]) === true) {
+        if (isset($metadata[$key]) === true)
+        {
             return $metadata[$key];
         }
         
@@ -301,8 +326,10 @@ class Stream implements StreamInterface
                             'wrapper_data',
                         ];
         
-        foreach ($excludedKeys as $key) {
-            if (isset($metadata[$key]) === true) {
+        foreach ($excludedKeys as $key)
+        {
+            if (isset($metadata[$key]) === true)
+            {
                 unset($metadata[$key]);
             }
         }
@@ -322,16 +349,20 @@ class Stream implements StreamInterface
     {
         $resource = $stream;
 
-        if (is_string($stream)) {
-            try {
+        if (is_string($stream))
+        {
+            try
+            {
                 $resource = @fopen($stream, $mode);
             }
-            catch (Throwable $error) {
+            catch (Throwable $error)
+            {
                 throw new RuntimeException('Invalid stream reference provided.');
             }
         }
 
-        if (!is_resource($resource) || !in_array(get_resource_type($resource), self::ALLOWED_STREAM_RESOURCE_TYPES, true)) {
+        if (!is_resource($resource) || !in_array(get_resource_type($resource), self::ALLOWED_STREAM_RESOURCE_TYPES, true))
+        {
             throw new RuntimeException('Invalid stream provided; must be a string stream identifier or stream resource');
         }
 
