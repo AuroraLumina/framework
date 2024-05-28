@@ -338,8 +338,10 @@ class ServerRequest implements ServerRequestInterface
         $clone = clone $this;
         $clone->uri = $uri;
 
-        if (!$preserveHost) {
-            if ($host = $uri->getHost()) {
+        if (!$preserveHost)
+        {
+            if ($host = $uri->getHost())
+            {
                 $clone->headers['host'] = [$host];
             }
         }

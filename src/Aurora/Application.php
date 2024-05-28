@@ -127,7 +127,7 @@ class Application implements RouterInterface, ContainerInterface
      * @param bool $cleanDebuff Clear output
      * @return void
      */
-    public function run(bool $cleanDebuff=true): void
+    public function run(bool $cleanDebuff = true): void
     {
         $request = ServerRequestFactory::fromGlobals();
         $response = $this->handle($request);

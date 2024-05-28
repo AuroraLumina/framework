@@ -2,6 +2,7 @@
 
 namespace AuroraLumina\Stream;
 
+use RuntimeException;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -84,22 +85,22 @@ class EmptyStream implements StreamInterface
      * @param int $offset The offset to seek to
      * @param int $whence Specifies how the cursor position will be calculated
      * @return void
-     * @throws \RuntimeException If seeking is attempted on an empty stream
+     * @throws RuntimeException If seeking is attempted on an empty stream
      */
     public function seek($offset, $whence = SEEK_SET): void
     {
-        throw new \RuntimeException('Cannot seek an empty stream');
+        throw new RuntimeException('Cannot seek an empty stream');
     }
 
     /**
      * Rewinds the stream to the beginning. Throws an exception for an empty stream.
      *
      * @return void
-     * @throws \RuntimeException If rewinding is attempted on an empty stream
+     * @throws RuntimeException If rewinding is attempted on an empty stream
      */
     public function rewind(): void
     {
-        throw new \RuntimeException('Cannot rewind an empty stream');
+        throw new RuntimeException('Cannot rewind an empty stream');
     }
 
     /**
@@ -117,11 +118,11 @@ class EmptyStream implements StreamInterface
      *
      * @param string $string The string to write to the stream
      * @return int Number of bytes written (always 0 for an empty stream)
-     * @throws \RuntimeException If writing is attempted on an empty stream
+     * @throws RuntimeException If writing is attempted on an empty stream
      */
     public function write($string): int
     {
-        throw new \RuntimeException('Cannot write to an empty stream');
+        throw new RuntimeException('Cannot write to an empty stream');
     }
 
     /**

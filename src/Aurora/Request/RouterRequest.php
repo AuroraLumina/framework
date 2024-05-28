@@ -107,7 +107,7 @@ class RouterRequest implements RouterRequestInterface
      *
      * @param string $class The controller class name.
      * @return mixed The instantiated controller.
-     * @throws \RuntimeException If the controller cannot be instantiated.
+     * @throws RuntimeException If the controller cannot be instantiated.
      */
     protected function instantiateController(string $class): mixed
     {
@@ -152,13 +152,14 @@ class RouterRequest implements RouterRequestInterface
      * @param ControllerInterface $controller The controller instance.
      * @param string $method The name of the method to validate.
      *
-     * @throws \RuntimeException If the method is not found in the controller class or if it is not public.
+     * @throws RuntimeException If the method is not found in the controller class or if it is not public.
      */
     protected function validateMethod(ControllerInterface $controller, string $method): void
     {
         $reflectionMethod = $this->getReflectionMethod($controller, $method);
 
-        if (!$reflectionMethod->isPublic()) {
+        if (!$reflectionMethod->isPublic())
+        {
             throw new RuntimeException("Method in controller class is not public.");
         }
     }
@@ -175,7 +176,8 @@ class RouterRequest implements RouterRequestInterface
      */
     private function getReflectionMethod(ControllerInterface $controller, string $method): ReflectionMethod
     {
-        if (!method_exists($controller, $method)) {
+        if (!method_exists($controller, $method))
+        {
             throw new RuntimeException("Method not found in controller class.");
         }
 
@@ -361,10 +363,8 @@ class RouterRequest implements RouterRequestInterface
      * @param string $path The request path.
      * @return int The status code.
      */
-    protected function findMatchingRouteStatus(string $method, string $path): int
+    protected function findMatchingRouteStatus(string $method, string $path, int $status = 404): int
     {
-        $status = 404;
-        
         foreach ($this->routes as $route)
         {
             $pattern = $this->buildRegexPattern($route->getPath());
@@ -373,14 +373,7 @@ class RouterRequest implements RouterRequestInterface
 
             if ($this->routeMatches($route, $method, $path, $fullPattern))
             {
-                if ($route->getMethod() !== $method)
-                {
-                    $status = 405;
-                }
-                else
-                {
-                    $status = 200;
-                }
+                $status = ($route->getMethod() !== $method) ? 405 : 200;
             }
         }
 
@@ -406,7 +399,8 @@ class RouterRequest implements RouterRequestInterface
 
             if ($this->routeMatches($route, $method, $path, $fullPattern))
             {
-                if ($route->getMethod() === $method) {
+                if ($route->getMethod() === $method)
+                {
                     $matchingRoute = $route;
                 }
             }
@@ -424,9 +418,9 @@ class RouterRequest implements RouterRequestInterface
      */
     protected function findRoute(string $method, string $path): stdClass
     {
-        $result = new stdClass();
+        $result = new stdClass;
         $result->status = $this->findMatchingRouteStatus($method, $path);
-        $result->route = $this->findMatchingRoute($method, $path);
+        $result->route  = $this->findMatchingRoute($method, $path);
         return $result;
     }
 

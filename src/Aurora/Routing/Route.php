@@ -28,7 +28,7 @@ class Route
     /**
      * The route action that will be called when the route matches the request.
      *
-     * @var string
+     * @var mixed
      */
     private mixed $action;
 
@@ -37,13 +37,13 @@ class Route
      *
      * @param string $method The HTTP method accepted by the route.
      * @param string $path The route pattern.
-     * @param string $action The route handler.
+     * @param mixed $action The route handler.
      */
     public function __construct(string $method, string $path, mixed $action)
     {
-        $this->method = $method;
-        $this->path = $path;
-        $this->action = $action;
+        $this->method   = $method;
+        $this->path     = $path;
+        $this->action   = $action;
     }
 
     /**
@@ -79,7 +79,7 @@ class Route
     /**
      * Gets the route handler.
      *
-     * @return string The route handler.
+     * @return mixed The route handler.
      */
     public function getAction(): mixed
     {
@@ -138,22 +138,23 @@ class Route
     }
 
     /**
- * Extract parameters from path and set them in the route.
- *
- * @param Route $route The route object.
- * @param string $path The request path.
- * @return void
- */
-public function extractAndSetParameters(Route $route, string $path): void
-{
-    preg_match_all('/{([^}]+)}/', $route->getPath(), $matches);
-    $parameterNames = $matches[1];
-    
-    preg_match("/^{$this->convertToRegex($route->getPath())}$/", $path, $matches);
-    array_shift($matches); // Remove full match
-    
-    foreach ($parameterNames as $index => $name) {
-        $route->setParameter($name, $matches[$index]);
+     * Extract parameters from path and set them in the route.
+     *
+     * @param Route $route The route object.
+     * @param string $path The request path.
+     * @return void
+     */
+    public function extractAndSetParameters(Route $route, string $path): void
+    {
+        preg_match_all('/{([^}]+)}/', $route->getPath(), $matches);
+        $parameterNames = $matches[1];
+        
+        preg_match("/^{$this->convertToRegex($route->getPath())}$/", $path, $matches);
+        array_shift($matches); // Remove full match
+        
+        foreach ($parameterNames as $index => $name)
+        {
+            $route->setParameter($name, $matches[$index]);
+        }
     }
-}
 }
