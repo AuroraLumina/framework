@@ -16,7 +16,7 @@ interface ContainerInterface
     /**
      * Binds a scoped service to the container.
      *
-     * @param ServiceInterface $service The service to be bound.
+     * @param string $service The service to be bound.
      * @return void
      */
     public function bindScoped(string $service): void;
