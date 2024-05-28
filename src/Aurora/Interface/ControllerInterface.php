@@ -9,8 +9,8 @@ interface ControllerInterface
     /**
      * Create a new response with the given body content.
      *
-     * @param string $body Content of the response.
+     * @param object|array|string $body Content of the response.
      * @return Response
      */
-    public static function response(string $write): Response;
+    public static function response(object|array|string $body, $flag = JSON_PRETTY_PRINT): Response;
 }

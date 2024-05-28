@@ -10,10 +10,19 @@ abstract class BaseController implements ControllerInterface
     /**
      * {@inheritdoc}
      */
-    public static function response(string $write): Response
+    public static function response(object|array|string $body, $flag = JSON_PRETTY_PRINT): Response
     {
-        $response = new Response();
-        $response->getBody()->write($write);
+        $response = new Response;
+
+        if (is_string($body))
+        {
+            $response->getBody()->write($body);
+        }
+        else
+        {
+            $response->getBody()->write(json_encode($body, $flag));
+        }
+
         return $response;
     }
 }
