@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-interface RouterRequestInterface extends RequestHandlerInterface, RouterInterface
+interface RouterRequestInterface extends RequestHandlerInterface
 {
     /**
      * Adds a middleware to the dispatcher.
@@ -23,22 +23,4 @@ interface RouterRequestInterface extends RequestHandlerInterface, RouterInterfac
      * @return ResponseInterface The response object.
      */
     public function handle(ServerRequestInterface $request): ResponseInterface;
-
-    /**
-     * Add a POST route to the application.
-     *
-     * @param string $path  The route path
-     * @param mixed $action The route action
-     * @return void
-     */
-    public function post(string $path, mixed $action): void;
-
-    /**
-     * Add a GET route to the application.
-     *
-     * @param string $path  The route path
-     * @param mixed $action The route action
-     * @return void
-     */
-    public function get(string $path, mixed $action): void;
 }

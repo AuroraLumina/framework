@@ -2,9 +2,9 @@
 
 namespace AuroraLumina;
 
+use Exception;
 use ReflectionClass;
 use RuntimeException;
-use Psr\Log\LoggerInterface;
 use Psr\Container\ContainerInterface;
 use AuroraLumina\Interface\ServiceInterface;
 
@@ -40,13 +40,13 @@ class Container implements ContainerInterface
      * @param  string $service
      * @return string|ServiceInterface
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function get(string $service): string|ServiceInterface
     {
         if (!$this->has($service))
         {
-            throw new \Exception("Container has not found.");
+            throw new Exception("Container has not found.");
         }
 
         return $this->instances[$service];
@@ -70,13 +70,13 @@ class Container implements ContainerInterface
      *
      * @return void
      *
-     * @throws \Exception If the service is already bound in the container.
+     * @throws Exception If the service is already bound in the container.
      */
     public function bindScoped(string $service): void
     {
         if ($this->has($service))
         {
-            throw new \Exception("Service already bound in the container.");
+            throw new Exception("Service already bound in the container.");
         }
 
         // For a scoped binding, simply store the service name itself.
@@ -124,7 +124,7 @@ class Container implements ContainerInterface
      *
      * @throws \RuntimeException If the service instance does not implement ServiceInterface.
      */
-    public function validateService(mixed $instance): void
+    protected function validateService(mixed $instance): void
     {
         if (!$instance instanceof ServiceInterface)
         {

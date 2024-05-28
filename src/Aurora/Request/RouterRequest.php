@@ -18,6 +18,7 @@ use AuroraLumina\Interface\ServiceInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use AuroraLumina\Interface\ControllerInterface;
 use AuroraLumina\Interface\RouterRequestInterface;
+use ReflectionFunction;
 
 class RouterRequest implements RouterRequestInterface
 {
@@ -56,30 +57,6 @@ class RouterRequest implements RouterRequestInterface
     public function add(string $method, string $path, mixed $action): void
     {
         $this->routes[] = new Route($method, $path, $action);
-    }
-    
-    /**
-     * Add a GET route to the application.
-     *
-     * @param string $path  The route path
-     * @param mixed $action The route action
-     * @return void
-     */
-    public function get(string $path, mixed $action): void
-    {
-        $this->add('GET', $path, $action);
-    }
-    
-    /**
-     * Add a POST route to the application.
-     *
-     * @param string $path  The route path
-     * @param mixed $action The route action
-     * @return void
-     */
-    public function post(string $path, mixed $action): void
-    {
-        $this->add('POST', $path, $action);
     }
 
     /**
@@ -214,7 +191,11 @@ class RouterRequest implements RouterRequestInterface
      */
     private function callControllerMethod($controller, string $method, ServerRequest $request, $args): Response
     {
-        return $controller->{$method}($request, $args);
+        $function = new ReflectionMethod($controller, $method);
+        
+        $parameters = $this->resolveConstructorDependencies(array_slice($function->getParameters(), 2));
+
+        return $controller->{$method}($request, $args, ...$parameters);
     }
 
     /**
@@ -226,11 +207,15 @@ class RouterRequest implements RouterRequestInterface
      */
     protected function buildCallback(mixed $action): callable
     {
-        return function (ServerRequest $request, array $parameters) use ($action)
+        return function (ServerRequest $request, array $args) use ($action)
         {
             if ($action instanceof Closure)
             {
-                return $action($request, $parameters);
+                $function = new ReflectionFunction($action);
+
+                $parameters = $this->resolveConstructorDependencies(array_slice($function->getParameters(), 2));
+
+                return $function->invoke($request, $args, ...$parameters);
             }
     
             if (is_array($action))
@@ -242,7 +227,7 @@ class RouterRequest implements RouterRequestInterface
                 $this->validateController($controller);
                 $this->validateMethod($controller, $method);
 
-                return $this->callControllerMethod($controller, $method, $request, $parameters);
+                return $this->callControllerMethod($controller, $method, $request, $args);
             }
     
             return $action;
@@ -353,7 +338,6 @@ class RouterRequest implements RouterRequestInterface
     {
         // Set route parameters from the request path
         preg_match('/' . $pattern . '/', $path, $matches);
-        
         foreach ($matches as $key => $value)
         {
             if (!is_numeric($key))
