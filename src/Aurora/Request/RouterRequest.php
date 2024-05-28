@@ -191,7 +191,11 @@ class RouterRequest implements RouterRequestInterface
      */
     private function callControllerMethod($controller, string $method, ServerRequest $request, $args): Response
     {
-        return $controller->{$method}($request, $args);
+        $function = new ReflectionMethod($controller, $method);
+        
+        $parameters = $this->resolveConstructorDependencies(array_slice($function->getParameters(), 2));
+
+        return $controller->{$method}($request, $args, ...$parameters);
     }
 
     /**
@@ -203,15 +207,15 @@ class RouterRequest implements RouterRequestInterface
      */
     protected function buildCallback(mixed $action): callable
     {
-        return function (ServerRequest $request, array $parameters) use ($action)
+        return function (ServerRequest $request, array $args) use ($action)
         {
             if ($action instanceof Closure)
             {
                 $function = new ReflectionFunction($action);
 
-                $arguments = $this->resolveConstructorDependencies(array_slice($function->getParameters(), 2));
+                $parameters = $this->resolveConstructorDependencies(array_slice($function->getParameters(), 2));
 
-                return $function->invoke($request, $parameters, ...$arguments);
+                return $function->invoke($request, $args, ...$parameters);
             }
     
             if (is_array($action))
@@ -223,7 +227,7 @@ class RouterRequest implements RouterRequestInterface
                 $this->validateController($controller);
                 $this->validateMethod($controller, $method);
 
-                return $this->callControllerMethod($controller, $method, $request, $parameters);
+                return $this->callControllerMethod($controller, $method, $request, $args);
             }
     
             return $action;
