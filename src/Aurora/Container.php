@@ -5,8 +5,8 @@ namespace AuroraLumina;
 use Exception;
 use ReflectionClass;
 use RuntimeException;
-use Psr\Container\ContainerInterface;
 use AuroraLumina\Interface\ServiceInterface;
+use AuroraLumina\Interface\ContainerInterface;
 
 class Container implements ContainerInterface
 {
@@ -122,9 +122,9 @@ class Container implements ContainerInterface
      *
      * @return void
      *
-     * @throws \RuntimeException If the service instance does not implement ServiceInterface.
+     * @throws RuntimeException If the service instance does not implement ServiceInterface.
      */
-    protected function validateService(mixed $instance): void
+    public function validateService(mixed $instance): void
     {
         if (!$instance instanceof ServiceInterface)
         {

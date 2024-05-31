@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
-class Application implements RouterInterface, ContainerInterface
+class Application implements RouterInterface
 {
 
     /**
@@ -22,7 +22,7 @@ class Application implements RouterInterface, ContainerInterface
      *
      * @var Container
      */
-    protected Container $container;
+    protected ContainerInterface $container;
     
     /**
      * Router request instance.
@@ -41,11 +41,11 @@ class Application implements RouterInterface, ContainerInterface
     /**
      * Creates a new application instance.
      *
-     * @param Container $container The dependency injection container.
+     * @param ContainerInterface $container The dependency injection container.
      * @param RouterRequestInterface $routerRequest The router request instance.
      * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
-    public function __construct(Container $container, RouterRequestInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
+    public function __construct(ContainerInterface $container, RouterRequestInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
     {
         $this->container = $container;
         $this->routerRequest = $routerRequest;

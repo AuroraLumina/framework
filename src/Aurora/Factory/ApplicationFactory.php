@@ -5,6 +5,7 @@ namespace AuroraLumina\Factory;
 use AuroraLumina\Container;
 use AuroraLumina\Application;
 use AuroraLumina\Request\RouterRequest;
+use AuroraLumina\Interface\ContainerInterface;
 use AuroraLumina\Middleware\MiddlewareDispatcher;
 use AuroraLumina\Interface\RouterRequestInterface;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
@@ -14,9 +15,9 @@ class ApplicationFactory
     /**
      * The application container.
      *
-     * @var Container|null
+     * @var ContainerInterface|null
      */
-    protected static ?Container $container;
+    protected static ?ContainerInterface $container;
 
     /**
      * The application Router.
@@ -35,11 +36,11 @@ class ApplicationFactory
     /**
      * Create a new Application.
      *
-     * @param Container|null $container The dependency injection container.
+     * @param ContainerInterface|null $container The dependency injection container.
      * 
      * @return Application The created application instance.
      */
-    public static function createApplication(?Container $container = null): Application
+    public static function createApplication(?ContainerInterface $container = null): Application
     {
         static::$container = $container ?? static::$container ?? new Container();
         static::$router = new RouterRequest(static::$container);
@@ -54,11 +55,11 @@ class ApplicationFactory
     /**
      * Define an container in the application factory
      *
-     * @param  Container $container
+     * @param  ContainerInterface $container
      * 
      * @return void
      */
-    public static function setContainer(Container $container): void
+    public static function setContainer(ContainerInterface $container): void
     {
         static::$container = $container;
     }
