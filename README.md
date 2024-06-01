@@ -24,4 +24,4 @@ Aurora requires PHP 8.3 or newer.
 
 <a href="https://github.com/AuroraLumina/framework/graphs/contributors">
     <img src="https://opencollective.com/auroralumina-framework/contributors.svg?width=890&button" />
-</a>
+</a> 
