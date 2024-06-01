@@ -124,7 +124,7 @@ class Container implements ContainerInterface
      *
      * @throws RuntimeException If the service instance does not implement ServiceInterface.
      */
-    public function validateService(mixed $instance): void
+    protected function validateService(mixed $instance): void
     {
         if (!$instance instanceof ServiceInterface)
         {

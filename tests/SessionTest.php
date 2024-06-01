@@ -10,9 +10,8 @@ class SessionTest extends TestCase
     {
     }
 
-    public function testInsertSession()
+    public function testA()
     {
-        assert(true, true);
     }
     
     protected function tearDown(): void

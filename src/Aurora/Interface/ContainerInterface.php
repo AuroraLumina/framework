@@ -44,15 +44,4 @@ interface ContainerInterface extends PsrContainerInterface
      * @throws RuntimeException
      */
     public function bind(string|ServiceInterface $service): void;
-
-    /**
-     * Validates a service instance to ensure it implements the ServiceInterface.
-     *
-     * @param mixed $instance The service instance to validate.
-     *
-     * @return void
-     *
-     * @throws RuntimeException If the service instance does not implement ServiceInterface.
-     */
-    public function validateService(mixed $instance): void;
 }
