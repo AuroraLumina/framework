@@ -72,17 +72,27 @@ class RouterRequest implements RouterRequestInterface
     }
 
     /**
-     * Resolve a single constructor parameter dependency.
+     * Resolve a dependency by its type hint.
      *
-     * @param ReflectionParameter $param The parameter to resolve.
-     * @return ServiceInterface The resolved dependency.
-     * @throws RuntimeException If the dependency cannot be resolved.
+     * @param ReflectionParameter $param The parameter representing the dependency.
+     * 
+     * @return object The resolved dependency instance.
+     * 
+     * @throws RuntimeException If the dependency or its configuration is not found in the container.
      */
-    protected function resolveDependency(ReflectionParameter $param): ServiceInterface
+    protected function resolveDependency(ReflectionParameter $param): object
     {
         $name = $param->getType()->getName();
+
+        $hasConfiguration = $this->container->hasConfiguration($name);
+
+        if ($hasConfiguration)
+        {
+            $configuration = $this->container->getConfiguration($name);
+            return $configuration;
+        }
         
-        if (!$this->container->has($name))
+        if (!$this->container->has($name) || !$hasConfiguration)
         {
             throw new RuntimeException("Dependency not found in the container.");
         }

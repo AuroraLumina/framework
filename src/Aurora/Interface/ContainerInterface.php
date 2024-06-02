@@ -10,6 +10,7 @@ interface ContainerInterface extends PsrContainerInterface
      * Get an instance from an id
      *
      * @param  string $service
+     * 
      * @return string|ServiceInterface
      *
      * @throws Exception
@@ -20,6 +21,7 @@ interface ContainerInterface extends PsrContainerInterface
      * Check if you have an instance.
      *
      * @param  string $service
+     * 
      * @return void
      */
     public function has(string $service): bool;
@@ -39,9 +41,21 @@ interface ContainerInterface extends PsrContainerInterface
      * Bind an instance from an service
      *
      * @param ServiceInterface $service
+     * 
      * @return void
      *
      * @throws RuntimeException
      */
     public function bind(string|ServiceInterface $service): void;
+
+    /**
+     * Bind a configuration object.
+     *
+     * @param object $configuration The configuration object to bind.
+     * 
+     * @return void
+     * 
+     * @throws Exception If the provided configuration is not a valid class instance or if it is an instance of stdClass.
+     */
+    public function configuration(object $configuration): void;
 }

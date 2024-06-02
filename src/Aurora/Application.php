@@ -91,17 +91,33 @@ class Application implements RouterInterface
      * Binds a scoped service to the container.
      *
      * @param ServiceInterface $service The service to be bound.
+     * 
      * @return void
      */
     public function bindScoped(string $service): void
     {
         $this->container->bind($service);
     }
+
+    /**
+     * Bind a configuration object.
+     *
+     * @param object $configuration The configuration object to bind.
+     * 
+     * @return void
+     * 
+     * @throws Exception If the provided configuration is not a valid class instance or if it is an instance of stdClass.
+     */
+    public function configuration(object $data): void
+    {
+        $this->container->configuration($data);
+    }
     
     /**
      * Adds a middleware to the middleware chain.
      *
      * @param MiddlewareInterface $middleware The middleware to be added.
+     * 
      * @return void
      */
     public function addMiddleware(MiddlewareInterface $middleware): void

@@ -2,6 +2,7 @@
 
 namespace AuroraLumina;
 
+use stdClass;
 use Exception;
 use ReflectionClass;
 use RuntimeException;
@@ -16,6 +17,14 @@ class Container implements ContainerInterface
      * @var array<string|ServiceInterface>
      */
     protected $instances = [];
+
+    
+    /**
+     * The configuration records.
+     *
+     * @var array<mixed>
+     */
+    protected $configurations = [];
 
     /**
      * Constructor that accepts multiple instances of ServiceInterface.
@@ -38,6 +47,7 @@ class Container implements ContainerInterface
      * Get an instance from an id
      *
      * @param  string $service
+     * 
      * @return string|ServiceInterface
      *
      * @throws Exception
@@ -56,6 +66,7 @@ class Container implements ContainerInterface
      * Check if you have an instance.
      *
      * @param  string $service
+     * 
      * @return void
      */
     public function has(string $service): bool
@@ -87,6 +98,7 @@ class Container implements ContainerInterface
      * Bind an instance from an service
      *
      * @param ServiceInterface $service
+     * 
      * @return void
      *
      * @throws RuntimeException
@@ -124,11 +136,68 @@ class Container implements ContainerInterface
      *
      * @throws RuntimeException If the service instance does not implement ServiceInterface.
      */
-    protected function validateService(mixed $instance): void
+    public function validateService(mixed $instance): void
     {
         if (!$instance instanceof ServiceInterface)
         {
             throw new RuntimeException("Invalid service. Expected instance of ServiceInterface.");
         }
+    }
+
+    /**
+     * Check if you have an configuration.
+     *
+     * @param  string $service
+     * 
+     * @return bool
+     */
+    public function hasConfiguration(string $key): bool
+    {
+        return array_key_exists($key, $this->configurations);
+    }
+
+    /**
+     * Get an configuration from an key
+     *
+     * @param  string $key
+     * 
+     * @return mixed
+     *
+     * @throws Exception
+     */
+    public function getConfiguration(string $key): mixed
+    {
+        if (!$this->hasConfiguration($key))
+        {
+            throw new Exception("Configuration has not found.");
+        }
+
+        return $this->configurations[$key];
+    }
+
+    /**
+     * Bind a configuration object.
+     *
+     * @param object $configuration The configuration object to bind.
+     * 
+     * @return void
+     * 
+     * @throws Exception If the provided configuration is not a valid class instance or if it is an instance of stdClass.
+     */
+    public function configuration(object $configuration): void
+    {
+        $class = get_class($configuration);
+
+        if (!class_exists($class))
+        {
+            throw new Exception("The provided configuration must be a valid class instance.");
+        }
+
+        if ($configuration instanceof stdClass)
+        {
+            throw new Exception("stdClass instances are not allowed as configurations.");
+        }
+
+        $this->configurations[$class] = $configuration;
     }
 }
