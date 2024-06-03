@@ -2,6 +2,9 @@
 
 namespace AuroraLumina\Routing;
 
+/**
+ * Represents a route in the application.
+ */
 class Route
 {
     /**
@@ -37,7 +40,7 @@ class Route
      *
      * @param string $method The HTTP method accepted by the route.
      * @param string $path The route pattern.
-     * @param mixed $action The route handler.
+     * @param mixed  $action The route handler.
      */
     public function __construct(string $method, string $path, mixed $action)
     {
@@ -125,7 +128,6 @@ class Route
     /**
      * Check if route matches method and path.
      *
-     * @param Route $route The route object.
      * @param string $method The request method.
      * @param string $path The request path.
      * @param string $pattern The regex pattern of the route.
@@ -140,21 +142,20 @@ class Route
     /**
      * Extract parameters from path and set them in the route.
      *
-     * @param Route $route The route object.
      * @param string $path The request path.
      * @return void
      */
-    public function extractAndSetParameters(Route $route, string $path): void
+    public function extractAndSetParameters(string $path): void
     {
-        preg_match_all('/{([^}]+)}/', $route->getPath(), $matches);
+        preg_match_all('/{([^}]+)}/', $this->path, $matches);
         $parameterNames = $matches[1];
         
-        preg_match("/^{$this->convertToRegex($route->getPath())}$/", $path, $matches);
+        preg_match("/^{$this->convertToRegex($this->path)}$/", $path, $matches);
         array_shift($matches); // Remove full match
         
         foreach ($parameterNames as $index => $name)
         {
-            $route->setParameter($name, $matches[$index]);
+            $this->setParameter($name, $matches[$index]);
         }
     }
 }

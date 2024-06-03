@@ -13,13 +13,16 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use AuroraLumina\Interface\MiddlewareDispatcherInterface;
 
+/**
+ * Application class for handling HTTP requests.
+ */
 class Application implements RouterInterface
 {
 
     /**
      * Dependency injection container.
      *
-     * @var Container
+     * @var ContainerInterface
      */
     protected ContainerInterface $container;
     
@@ -40,8 +43,8 @@ class Application implements RouterInterface
     /**
      * Creates a new application instance.
      *
-     * @param ContainerInterface $container The dependency injection container.
-     * @param RouterRequestInterface $routerRequest The router request instance.
+     * @param ContainerInterface            $container            The dependency injection container.
+     * @param RouterRequestInterface        $routerRequest        The router request instance.
      * @param MiddlewareDispatcherInterface $middlewareDispatcher The middleware dispatcher instance.
      */
     public function __construct(ContainerInterface $container, RouterRequestInterface $routerRequest, MiddlewareDispatcherInterface $middlewareDispatcher)
@@ -54,8 +57,9 @@ class Application implements RouterInterface
     /**
      * Add a GET route to the application.
      *
-     * @param string $path  The route path
-     * @param mixed $action The route action
+     * @param string $path  The route path.
+     * @param mixed  $action The route action.
+     * 
      * @return void
      */
     public function get(string $path, mixed $action): void
@@ -66,8 +70,9 @@ class Application implements RouterInterface
     /**
      * Add a POST route to the application.
      *
-     * @param string $path  The route path
-     * @param mixed $action The route action
+     * @param string $path  The route path.
+     * @param mixed  $action The route action.
+     * 
      * @return void
      */
     public function post(string $path, mixed $action): void
@@ -79,6 +84,7 @@ class Application implements RouterInterface
      * Binds a service to the container.
      *
      * @param object $service The service to be bound.
+     * 
      * @return void
      */
     public function bind(object $service): void
@@ -101,7 +107,7 @@ class Application implements RouterInterface
     /**
      * Bind a configuration object.
      *
-     * @param object $configuration The configuration object to bind.
+     * @param object $data The configuration object to bind.
      * 
      * @return void
      * 
@@ -127,8 +133,9 @@ class Application implements RouterInterface
     /**
      * Handle the incoming request and return a response.
      *
-     * @param Request $request The incoming HTTP request
-     * @return Response The HTTP response
+     * @param Request $request The incoming HTTP request.
+     * 
+     * @return Response The HTTP response.
      */
     public function handle(Request $request): Response
     {
@@ -139,7 +146,8 @@ class Application implements RouterInterface
     /**
      * Run the application.
      *
-     * @param bool $cleanDebuff Clear output
+     * @param bool $cleanDebuff Clear output.
+     * 
      * @return void
      */
     public function run(bool $cleanDebuff = true): void
@@ -152,8 +160,9 @@ class Application implements RouterInterface
     /**
      * Emit the HTTP response.
      *
-     * @param Response $response The HTTP response to emit
-     * @param bool     $cleanDebuff Clear output
+     * @param Response $response   The HTTP response to emit.
+     * @param bool     $cleanDebuff Clear output.
+     * 
      * @return void
      */
     protected function emitResponse(Response $response, bool $cleanDebuff): void

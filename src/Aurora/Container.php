@@ -5,10 +5,12 @@ namespace AuroraLumina;
 use stdClass;
 use Exception;
 use ReflectionClass;
-use RuntimeException;
 use ReflectionParameter;
 use AuroraLumina\Interface\ContainerInterface;
 
+/**
+ * A simple dependency injection container.
+ */
 class Container implements ContainerInterface
 {
     /**
@@ -44,13 +46,13 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Get an instance from an id
+     * Get an instance by its id.
      *
-     * @param  string $service
+     * @param  string $service The id of the instance.
      * 
-     * @return mixed
+     * @return mixed The instance.
      *
-     * @throws Exception
+     * @throws Exception If the instance is not found.
      */
     public function get(string $service): mixed
     {
@@ -63,11 +65,11 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Check if you have an instance.
+     * Check if an instance exists.
      *
-     * @param  string $service
+     * @param  string $service The id of the instance.
      * 
-     * @return void
+     * @return bool True if the instance exists, false otherwise.
      */
     public function has(string $service): bool
     {
@@ -97,13 +99,13 @@ class Container implements ContainerInterface
     }
     
     /**
-     * Bind an instance from an service
+     * Bind an instance from a service.
      *
-     * @param object $service
+     * @param object $service The service to bind.
      * 
      * @return void
      *
-     * @throws Exception
+     * @throws Exception If the provided service is invalid.
      */
     public function bind(object $service): void
     {
@@ -219,11 +221,11 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Check if you have an configuration.
+     * Check if an configuration exists.
      *
-     * @param  string $service
+     * @param  string $key The key of the configuration.
      * 
-     * @return bool
+     * @return bool True if the configuration exists, false otherwise.
      */
     public function hasConfiguration(string $key): bool
     {
@@ -231,13 +233,13 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Get an configuration from an key
+     * Get a configuration by its key.
      *
-     * @param  string $key
+     * @param  string $key The key of the configuration.
      * 
-     * @return mixed
+     * @return mixed The configuration.
      *
-     * @throws Exception
+     * @throws Exception If the configuration is not found.
      */
     public function getConfiguration(string $key): mixed
     {

@@ -4,25 +4,28 @@ namespace AuroraLumina\Interface;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 
+/**
+ * Interface for a container that manages object instances.
+ */
 interface ContainerInterface extends PsrContainerInterface
 {
     /**
-     * Get an instance from an id
+     * Get an instance by its id.
      *
-     * @param  string $service
+     * @param string $service The id of the instance.
      * 
-     * @return mixed
+     * @return mixed The instance.
      *
-     * @throws Exception
+     * @throws Exception If the instance is not found.
      */
     public function get(string $service): mixed;
 
     /**
-     * Check if you have an instance.
+     * Check if an instance exists.
      *
-     * @param  string $service
+     * @param string $service The id of the instance.
      * 
-     * @return void
+     * @return bool True if the instance exists, false otherwise.
      */
     public function has(string $service): bool;
     
@@ -38,13 +41,13 @@ interface ContainerInterface extends PsrContainerInterface
     public function bindScoped(string $service): void;
 
     /**
-     * Bind an instance from an service
+     * Bind an instance from a service.
      *
-     * @param object $service
+     * @param object $service The service to bind.
      * 
      * @return void
      *
-     * @throws Exception
+     * @throws Exception If the provided service is invalid.
      */
     public function bind(object $service): void;
 
@@ -63,6 +66,7 @@ interface ContainerInterface extends PsrContainerInterface
      * Resolve constructor dependencies for a given set of parameters.
      *
      * @param array $params The constructor parameters.
+     * 
      * @return array The resolved dependencies.
      */
     public function resolveConstructorDependencies(array $params): array;
