@@ -400,6 +400,7 @@ class RouterRequest implements RouterRequestInterface
             {
                 return $callback;
             }
+            
             $response = new Response($result->status);
 
             if (is_string($callback))
