@@ -396,17 +396,24 @@ class RouterRequest implements RouterRequestInterface
 
             $callback = $this->buildCallback($route->getAction())($request, $route->getParameters());
 
-            if (is_string($callback))
-            {
-                $response = new Response($result->status);
-                $response->getBody()->write($callback);
-                return $response;
-            }
-
             if ($callback instanceof ResponseInterface)
             {
                 return $callback;
             }
+            
+            $response = new Response($result->status);
+
+            if (is_string($callback))
+            {
+                $response->getBody()->write($callback);
+            }
+
+            if (is_object($callback))
+            {
+                $response->getBody()->write(json_encode($callback, JSON_PRETTY_PRINT));
+            }
+
+            return $response;
         }
 
         return new EmptyResponse($result->status ? $result->status : 404);
