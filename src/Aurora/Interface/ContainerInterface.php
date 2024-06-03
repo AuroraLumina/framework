@@ -4,23 +4,28 @@ namespace AuroraLumina\Interface;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 
+/**
+ * Interface for a container that manages object instances.
+ */
 interface ContainerInterface extends PsrContainerInterface
 {
     /**
-     * Get an instance from an id
+     * Get an instance by its id.
      *
-     * @param  string $service
-     * @return string|ServiceInterface
+     * @param string $service The id of the instance.
+     * 
+     * @return mixed The instance.
      *
-     * @throws Exception
+     * @throws Exception If the instance is not found.
      */
-    public function get(string $service): string|ServiceInterface;
+    public function get(string $service): mixed;
 
     /**
-     * Check if you have an instance.
+     * Check if an instance exists.
      *
-     * @param  string $service
-     * @return void
+     * @param string $service The id of the instance.
+     * 
+     * @return bool True if the instance exists, false otherwise.
      */
     public function has(string $service): bool;
     
@@ -36,12 +41,33 @@ interface ContainerInterface extends PsrContainerInterface
     public function bindScoped(string $service): void;
 
     /**
-     * Bind an instance from an service
+     * Bind an instance from a service.
      *
-     * @param ServiceInterface $service
+     * @param object $service The service to bind.
+     * 
      * @return void
      *
-     * @throws RuntimeException
+     * @throws Exception If the provided service is invalid.
      */
-    public function bind(string|ServiceInterface $service): void;
+    public function bind(object $service): void;
+
+    /**
+     * Bind a configuration object.
+     *
+     * @param object $configuration The configuration object to bind.
+     * 
+     * @return void
+     * 
+     * @throws Exception If the provided configuration is not a valid class instance or if it is an instance of stdClass.
+     */
+    public function configuration(object $configuration): void;
+
+    /**
+     * Resolve constructor dependencies for a given set of parameters.
+     *
+     * @param array $params The constructor parameters.
+     * 
+     * @return array The resolved dependencies.
+     */
+    public function resolveConstructorDependencies(array $params): array;
 }
