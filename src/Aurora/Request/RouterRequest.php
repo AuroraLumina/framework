@@ -9,14 +9,12 @@ use ReflectionMethod;
 use RuntimeException;
 use ReflectionFunction;
 use ReflectionException;
-use ReflectionParameter;
 use AuroraLumina\Container;
 use AuroraLumina\Routing\Route;
 use Psr\Http\Message\RequestInterface;
 use AuroraLumina\Request\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use AuroraLumina\Http\Response\Response;
-use AuroraLumina\Interface\ServiceInterface;
 use AuroraLumina\Http\Response\EmptyResponse;
 use AuroraLumina\Interface\ControllerInterface;
 use AuroraLumina\Interface\RouterRequestInterface;
@@ -61,58 +59,6 @@ class RouterRequest implements RouterRequestInterface
     }
 
     /**
-     * Resolve constructor dependencies for a given set of parameters.
-     *
-     * @param array $params The constructor parameters.
-     * @return array The resolved dependencies.
-     */
-    protected function resolveConstructorDependencies(array $params): array
-    {
-        return array_map([$this, 'resolveDependency'], $params);
-    }
-
-    /**
-     * Resolve a dependency by its type hint.
-     *
-     * @param ReflectionParameter $param The parameter representing the dependency.
-     * 
-     * @return object The resolved dependency instance.
-     * 
-     * @throws RuntimeException If the dependency or its configuration is not found in the container.
-     */
-    protected function resolveDependency(ReflectionParameter $param): object
-    {
-        $name = $param->getType()->getName();
-
-        $hasConfiguration = $this->container->hasConfiguration($name);
-
-        if ($hasConfiguration)
-        {
-            $configuration = $this->container->getConfiguration($name);
-            return $configuration;
-        }
-        
-        if (!$this->container->has($name) || !$hasConfiguration)
-        {
-            throw new RuntimeException("Dependency not found in the container.");
-        }
-
-        $service = $this->container->get($name);
-
-        if (is_string($service))
-        {
-            $reflectionClass = new ReflectionClass($service);
-            $instance = $reflectionClass->newInstance();
-
-            $this->container->validateService($instance);
-
-            return $instance;
-        }
-
-        return $service;
-    }
-
-    /**
      * Instantiate a controller class with its dependencies injected.
      *
      * @param string $class The controller class name.
@@ -131,7 +77,7 @@ class RouterRequest implements RouterRequestInterface
         else
         {
             return $reflectionClass->newInstanceArgs(
-                $this->resolveConstructorDependencies($constructor->getParameters())
+                $this->container->resolveConstructorDependencies($constructor->getParameters())
             );
         }
     }
@@ -210,7 +156,7 @@ class RouterRequest implements RouterRequestInterface
         
         $parameters = array_slice($function->getParameters(), 2);
         
-        $resolvedParameters = $this->resolveConstructorDependencies($parameters);
+        $resolvedParameters = $this->container->resolveConstructorDependencies($parameters);
         
         return $function->invokeArgs($controller, array_merge([$request, $args], $resolvedParameters));
     }
@@ -232,7 +178,7 @@ class RouterRequest implements RouterRequestInterface
                 
                 $parameters = array_slice($reflectionFunction->getParameters(), 2);
                 
-                $resolvedParameters = $this->resolveConstructorDependencies($parameters);
+                $resolvedParameters = $this->container->resolveConstructorDependencies($parameters);
                 
                 return $reflectionFunction->invokeArgs([$request, $args, ...$resolvedParameters]);
             }

@@ -11,11 +11,11 @@ interface ContainerInterface extends PsrContainerInterface
      *
      * @param  string $service
      * 
-     * @return string|ServiceInterface
+     * @return mixed
      *
      * @throws Exception
      */
-    public function get(string $service): string|ServiceInterface;
+    public function get(string $service): mixed;
 
     /**
      * Check if you have an instance.
@@ -40,13 +40,13 @@ interface ContainerInterface extends PsrContainerInterface
     /**
      * Bind an instance from an service
      *
-     * @param ServiceInterface $service
+     * @param object $service
      * 
      * @return void
      *
-     * @throws RuntimeException
+     * @throws Exception
      */
-    public function bind(string|ServiceInterface $service): void;
+    public function bind(object $service): void;
 
     /**
      * Bind a configuration object.
@@ -58,4 +58,12 @@ interface ContainerInterface extends PsrContainerInterface
      * @throws Exception If the provided configuration is not a valid class instance or if it is an instance of stdClass.
      */
     public function configuration(object $configuration): void;
+
+    /**
+     * Resolve constructor dependencies for a given set of parameters.
+     *
+     * @param array $params The constructor parameters.
+     * @return array The resolved dependencies.
+     */
+    public function resolveConstructorDependencies(array $params): array;
 }

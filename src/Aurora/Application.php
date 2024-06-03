@@ -6,7 +6,6 @@ use AuroraLumina\Http\Emitter;
 use Psr\Http\Server\MiddlewareInterface;
 
 use AuroraLumina\Interface\RouterInterface;
-use AuroraLumina\Interface\ServiceInterface;
 use AuroraLumina\Factory\ServerRequestFactory;
 use AuroraLumina\Interface\ContainerInterface;
 use AuroraLumina\Interface\RouterRequestInterface;
@@ -79,10 +78,10 @@ class Application implements RouterInterface
     /**
      * Binds a service to the container.
      *
-     * @param ServiceInterface $service The service to be bound.
+     * @param object $service The service to be bound.
      * @return void
      */
-    public function bind(ServiceInterface $service): void
+    public function bind(object $service): void
     {
         $this->container->bind($service);
     }
@@ -90,13 +89,13 @@ class Application implements RouterInterface
     /**
      * Binds a scoped service to the container.
      *
-     * @param ServiceInterface $service The service to be bound.
+     * @param string $service The service to be bound.
      * 
      * @return void
      */
     public function bindScoped(string $service): void
     {
-        $this->container->bind($service);
+        $this->container->bindScoped($service);
     }
 
     /**

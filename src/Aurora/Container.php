@@ -6,7 +6,7 @@ use stdClass;
 use Exception;
 use ReflectionClass;
 use RuntimeException;
-use AuroraLumina\Interface\ServiceInterface;
+use ReflectionParameter;
 use AuroraLumina\Interface\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -14,7 +14,7 @@ class Container implements ContainerInterface
     /**
      * The container records.
      *
-     * @var array<string|ServiceInterface>
+     * @var array<object>
      */
     protected $instances = [];
 
@@ -27,15 +27,15 @@ class Container implements ContainerInterface
     protected $configurations = [];
 
     /**
-     * Constructor that accepts multiple instances of ServiceInterface.
+     * Constructor that accepts multiple instances of objects.
      * 
      * This constructor utilizes the splat operator (...) to accept a variable number of 
-     * ServiceInterface instances. Each provided instance is stored in the $instances property 
+     * object instances. Each provided instance is stored in the $instances property 
      * for later use.
      * 
-     * @param ServiceInterface ...$services One or more instances of ServiceInterface to be managed.
+     * @param object ...$services One or more instances of objects to be managed.
      */
-    public function __construct(ServiceInterface ...$services)
+    public function __construct(object ...$services)
     {
         foreach ($services as $service)
         {
@@ -48,11 +48,11 @@ class Container implements ContainerInterface
      *
      * @param  string $service
      * 
-     * @return string|ServiceInterface
+     * @return mixed
      *
      * @throws Exception
      */
-    public function get(string $service): string|ServiceInterface
+    public function get(string $service): mixed
     {
         if (!$this->has($service))
         {
@@ -90,58 +90,132 @@ class Container implements ContainerInterface
             throw new Exception("Service already bound in the container.");
         }
 
+        $this->validateServiceClassName($service);
+
         // For a scoped binding, simply store the service name itself.
         $this->instances[$service] = $service;
     }
-
+    
     /**
      * Bind an instance from an service
      *
-     * @param ServiceInterface $service
+     * @param object $service
      * 
      * @return void
      *
-     * @throws RuntimeException
+     * @throws Exception
      */
-    public function bind(string|ServiceInterface $service): void
+    public function bind(object $service): void
     {
-        if (is_string($service))
+        $this->validateServiceObject($service);
+
+        $class = is_string($service) ? $service : get_class($service);
+
+        if ($this->has($class))
         {
-            $reflectionClass = new ReflectionClass($service);
-            $instance = $reflectionClass->newInstance();
+            throw new Exception("Service already bound in the container.");
+        }
+        
+        $this->instances[$class] = $service;
+    }
 
-            $this->validateService($instance);
-
-            $this->instances[$service] = $instance;
+    /**
+     * Validate if the provided class name is valid.
+     *
+     * @param string $class The class name to validate.
+     * 
+     * @return void
+     * 
+     * @throws Exception If the provided class name is not a valid class instance or if it is an instance of stdClass.
+     */
+    protected function validateServiceClassName(string $class): void
+    {
+        if (!class_exists($class))
+        {
+            throw new Exception("The provided must be a valid class instance.");
         }
 
-        if ($service instanceof ServiceInterface)
+        if ($class === stdClass::class)
         {
-            $class = get_class($service);
-
-            if ($this->has($class))
-            {
-                throw new RuntimeException("Service already bound in the container.");
-            }
-            $this->instances[$class] = $service;
+            throw new Exception("stdClass instances are not allowed.");
         }
     }
 
     /**
-     * Validates a service instance to ensure it implements the ServiceInterface.
+     * Validate if the provided object is valid for binding.
      *
-     * @param mixed $instance The service instance to validate.
-     *
+     * @param object $service The object to validate.
+     * 
      * @return void
-     *
-     * @throws RuntimeException If the service instance does not implement ServiceInterface.
+     * 
+     * @throws Exception If the provided object is an instance of stdClass.
      */
-    public function validateService(mixed $instance): void
+    protected function validateServiceObject(object $service): void
     {
-        if (!$instance instanceof ServiceInterface)
+        if ($service instanceof stdClass)
         {
-            throw new RuntimeException("Invalid service. Expected instance of ServiceInterface.");
+            throw new Exception("Instances of stdClass are not allowed.");
         }
+    }
+
+    /**
+     * Resolve constructor dependencies for a given set of parameters.
+     *
+     * @param array $params The constructor parameters.
+     * @return array The resolved dependencies.
+     */
+    public function resolveConstructorDependencies(array $params): array
+    {
+        return array_map([$this, 'resolveDependency'], $params);
+    }
+
+    /**
+     * Resolve a dependency by its type hint.
+     *
+     * @param ReflectionParameter $param The parameter representing the dependency.
+     * 
+     * @return object The resolved dependency instance.
+     * 
+     * @throws Exception If the dependency or its configuration is not found in the container.
+     */
+    protected function resolveDependency(ReflectionParameter $param): object
+    {
+        $name = $param->getType()->getName();
+
+        if ($this->hasConfiguration($name))
+        {
+            $configuration = $this->getConfiguration($name);
+            return $configuration;
+        }
+        
+        if (!$this->has($name))
+        {
+            throw new Exception("Dependency not found in the container.");
+        }
+
+        $service = $this->get($name);
+
+        if (is_string($service))
+        {
+            $reflectionClass = new ReflectionClass($service);
+
+            $constructor = $reflectionClass->getConstructor();
+
+            if (!$constructor || count($constructor->getParameters()) === 0)
+            {
+                $instance = $reflectionClass->newInstance();
+            }
+            else
+            {
+                $instance = $reflectionClass->newInstanceArgs(
+                    $this->resolveConstructorDependencies($constructor->getParameters())
+                );
+            }
+
+            return $instance;
+        }
+
+        return $service;
     }
 
     /**
