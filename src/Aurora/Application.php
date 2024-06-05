@@ -125,7 +125,7 @@ class Application implements RouterInterface
      * 
      * @return void
      */
-    public function addMiddleware(MiddlewareInterface $middleware): void
+    public function add(MiddlewareInterface $middleware): void
     {
         $this->middlewareDispatcher->add($middleware);
     }
