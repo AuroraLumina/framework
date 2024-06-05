@@ -196,12 +196,13 @@ class Container implements ContainerInterface
 
         $className = $paramType->getName();
 
-        foreach ($objects as $object)
+        $filteredObjects = array_filter($objects, function ($object) use ($className) {
+            return get_class($object) === $className;
+        });
+        
+        if (!empty($filteredObjects))
         {
-            if ($className == get_class($object))
-            {
-                return $object;
-            }
+            return reset($filteredObjects);
         }
 
         $name = $param->getType()->getName();
