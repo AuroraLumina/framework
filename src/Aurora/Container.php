@@ -5,8 +5,11 @@ namespace AuroraLumina;
 use stdClass;
 use Exception;
 use ReflectionClass;
+use ReflectionNamedType;
 use ReflectionParameter;
+use AuroraLumina\Request\ServerRequest;
 use AuroraLumina\Interface\ContainerInterface;
+use AuroraLumina\Request\RequestArguments;
 
 /**
  * A simple dependency injection container.
@@ -163,25 +166,45 @@ class Container implements ContainerInterface
     /**
      * Resolve constructor dependencies for a given set of parameters.
      *
-     * @param array $params The constructor parameters.
+     * @param array<ReflectionParameter> $params The constructor parameters.
+     * @param array<mixed> $objects Optional objects to pass directly without resolving from the container.
+     * 
      * @return array The resolved dependencies.
      */
-    public function resolveConstructorDependencies(array $params): array
+    public function resolveConstructorDependencies(array $params, array $objects = []): array
     {
-        return array_map([$this, 'resolveDependency'], $params);
+        return array_map(function($param) use ($objects)
+        {
+            return $this->resolveDependency($param, $objects);
+        }, $params);
     }
 
     /**
      * Resolve a dependency by its type hint.
      *
      * @param ReflectionParameter $param The parameter representing the dependency.
+     * @param array<mixed> $objects Optional objects to pass directly without resolving from the container.
      * 
-     * @return object The resolved dependency instance.
+     * @return mixed The resolved dependency instance.
      * 
      * @throws Exception If the dependency or its configuration is not found in the container.
      */
-    protected function resolveDependency(ReflectionParameter $param): object
+    protected function resolveDependency(ReflectionParameter $param, array $objects): mixed
     {
+
+        $paramType = $param->getType();
+
+        $className = $paramType->getName();
+
+        $filteredObjects = array_filter($objects, function ($object) use ($className) {
+            return get_class($object) === $className;
+        });
+        
+        if (!empty($filteredObjects))
+        {
+            return reset($filteredObjects);
+        }
+
         $name = $param->getType()->getName();
 
         if ($this->hasConfiguration($name))

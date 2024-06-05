@@ -62,10 +62,12 @@ class RouterRequest implements RouterRequestInterface
      * Instantiate a controller class with its dependencies injected.
      *
      * @param string $class The controller class name.
-     * @return mixed The instantiated controller.
+     * 
+     * @return ControllerInterface The instantiated controller.
+     * 
      * @throws RuntimeException If the controller cannot be instantiated.
      */
-    protected function instantiateController(string $class): mixed
+    protected function instantiateController(string $class): ControllerInterface
     {
         $reflectionClass = new ReflectionClass($class);
 
@@ -143,22 +145,21 @@ class RouterRequest implements RouterRequestInterface
     /**
      * Call the specified method on the controller object.
      *
-     * @param object $controller The controller object.
+     * @param ControllerInterface $controller The controller object.
      * @param string $method The method name.
-     * @param ServerRequest $request The request object.
-     * @param array $args The arguments array.
+     * @param array<mixed> $args The objects array.
      * @return Response The response object.
      * @throws ReflectionException
      */
-    private function callControllerMethod($controller, string $method, ServerRequest $request, array $args): Response
+    private function callControllerMethod(ControllerInterface $controller, string $method, array $objects): Response
     {
         $function = $this->getReflectionMethod($controller, $method);
         
-        $parameters = array_slice($function->getParameters(), 2);
+        $parameters = $function->getParameters();
         
-        $resolvedParameters = $this->container->resolveConstructorDependencies($parameters);
+        $resolvedParameters = $this->container->resolveConstructorDependencies($parameters, $objects);
         
-        return $function->invokeArgs($controller, array_merge([$request, $args], $resolvedParameters));
+        return $function->invokeArgs($controller, $resolvedParameters);
     }
 
     /**
@@ -172,15 +173,17 @@ class RouterRequest implements RouterRequestInterface
     {
         return function (ServerRequest $request, array $args) use ($action)
         {
+            $arguments = new RequestArguments($args);
+
             if ($action instanceof Closure)
             {
                 $reflectionFunction = new ReflectionFunction($action);
                 
-                $parameters = array_slice($reflectionFunction->getParameters(), 2);
+                $parameters = $reflectionFunction->getParameters();
                 
-                $resolvedParameters = $this->container->resolveConstructorDependencies($parameters);
-                
-                return $reflectionFunction->invokeArgs([$request, $args, ...$resolvedParameters]);
+                $resolvedParameters = $this->container->resolveConstructorDependencies($parameters, [$request, $arguments]);
+
+                return $reflectionFunction->invokeArgs($resolvedParameters);
             }
     
             if (is_array($action))
@@ -192,7 +195,7 @@ class RouterRequest implements RouterRequestInterface
                 $this->validateController($controller);
                 $this->validateMethod($controller, $method);
 
-                return $this->callControllerMethod($controller, $method, $request, $args);
+                return $this->callControllerMethod($controller, $method, [$request, $arguments]);
             }
     
             return $action;
@@ -408,7 +411,7 @@ class RouterRequest implements RouterRequestInterface
                 $response->getBody()->write($callback);
             }
 
-            if (is_object($callback))
+            if (is_array($callback))
             {
                 $response->getBody()->write(json_encode($callback, JSON_PRETTY_PRINT));
             }

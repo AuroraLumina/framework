@@ -2,6 +2,8 @@
 
 namespace AuroraLumina\Interface;
 
+use AuroraLumina\Request\ServerRequest;
+use AuroraLumina\Request\RequestArguments;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 
 /**
@@ -65,9 +67,10 @@ interface ContainerInterface extends PsrContainerInterface
     /**
      * Resolve constructor dependencies for a given set of parameters.
      *
-     * @param array $params The constructor parameters.
+     * @param array<ReflectionParameter> $params The constructor parameters.
+     * @param array<mixed> $objects Optional objects to pass directly without resolving from the container.
      * 
      * @return array The resolved dependencies.
      */
-    public function resolveConstructorDependencies(array $params): array;
+    public function resolveConstructorDependencies(array $params, array $objects): array;
 }
